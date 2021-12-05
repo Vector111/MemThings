@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    tools:layout_editor_absoluteX="4dp"
+    tools:layout_editor_absoluteY="0dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl1"
+        android:layout_width="314dp"
+        android:layout_height="114dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/thingsNumTitle_tv"
+            android:layout_width="262dp"
+            android:layout_height="47dp"
+            android:layout_marginTop="1dp"
+            android:gravity="center"
+            android:text="@string/things_num"
+            android:textColor="@color/blue_teal"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/decThingsNum_ib"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginStart="1dp"
+            android:layout_marginBottom="1dp"
+            android:background="@drawable/bg_selector_for_plus_minus"
+            android:src="@drawable/drawable_selector_for_minus"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+             />
+
+        <TextView
+            android:id="@+id/thingsNumVal_tv"
+            android:layout_width="144dp"
+            android:layout_height="60dp"
+            android:layout_marginBottom="1dp"
+            android:gravity="center"
+            android:text="123"
+            android:textSize="40sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/incThingsNum_ib"
+            app:layout_constraintStart_toEndOf="@+id/decThingsNum_ib" />
+
+        <ImageButton
+            android:id="@+id/incThingsNum_ib"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="1dp"
+            android:layout_marginBottom="1dp"
+            android:background="@drawable/bg_selector_for_plus_minus"
+            android:src="@drawable/drawable_selector_for_plus"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+             />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl2"
+        android:layout_width="314dp"
+        android:layout_height="114dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cl1">
+
+        <TextView
+            android:id="@+id/memTime_tv"
+            android:layout_width="262dp"
+            android:layout_height="47dp"
+            android:layout_marginTop="1dp"
+            android:gravity="center"
+            android:text="@string/mem_time"
+            android:textColor="@color/blue_teal"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/decMemTime_ib"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginStart="1dp"
+            android:layout_marginBottom="1dp"
+            android:background="@drawable/bg_selector_for_plus_minus"
+            android:src="@drawable/drawable_selector_for_minus"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+             />
+
+        <TextView
+            android:id="@+id/memTimeVal_tv"
+            android:layout_width="144dp"
+            android:layout_height="60dp"
+            android:layout_marginBottom="1dp"
+            android:gravity="center"
+            android:text="123"
+            android:textSize="40sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/incMemTime_ib"
+            app:layout_constraintStart_toEndOf="@+id/decMemTime_ib" />
+
+        <ImageButton
+            android:id="@+id/incMemTime_ib"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="1dp"
+            android:layout_marginBottom="1dp"
+            android:background="@drawable/bg_selector_for_plus_minus"
+            android:src="@drawable/drawable_selector_for_plus"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+             />
+        <!--android:background="@drawable/roundcorner"
+            android:src="@drawable/ic_plus_normal"
+        android:src="@drawable/plus"-->
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <Button
+        android:id="@+id/gotoGame_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:layout_marginBottom="10dp"
+        android:backgroundTint="@color/blue_teal"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:text="@string/goto_game"
+        android:textAllCaps="false"
+        android:textSize="20sp"
+        app:cornerRadius="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:rippleColor="@color/violet" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+<!--    android:background="@drawable/exit_color_ib-->
+    <!--android:backgroundTint="@color/purple_700-->
+    <!--style="@style/Widget.MaterialComponents.Button.OutlinedButton"-->
+    <!--app:strokeColor="@color/white"-->
