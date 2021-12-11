@@ -34,7 +34,8 @@
                     android:paddingTop="4dp"
                     android:paddingRight="12dp"
                     android:stretchMode="none"
-                    android:verticalSpacing="4dp"></GridView>
+                    android:verticalSpacing="4dp">
+                </GridView>
 
                 <GridView
                     android:id="@+id/gridView2"

@@ -3,6 +3,7 @@ package com.bignerdranch.android.gridviewwithpictures;
 import androidx.appcompat.app.AppCompatActivity;
 import static com.bignerdranch.android.gridviewwithpictures.ImageButtonOperations.*;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -11,51 +12,40 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import static com.bignerdranch.android.gridviewwithpictures.MySettings.*;
+import android.content.Intent;
 
 
 public class MainActivity extends AppCompatActivity implements DoForPositive1 {
     public SharedPreferences apppref;
     public static final String APP_PREFERENCES = "apppref";
-    public static final int MIN_NUM_THINGS = 8;
 
     private ImageButton decThingsNum_ib;
     private ImageButton incThingsNum_ib;
     private TextView thingsNumVal_tv;
-    private static int numThingsArr[] = {MIN_NUM_THINGS, MIN_NUM_THINGS * 2,
-            MIN_NUM_THINGS * 3,MIN_NUM_THINGS * 4};
     private static int indNumThingsArr = 0;
 
     private ImageButton decMemTime_ib;
     private ImageButton incMemTime_ib;
     private TextView memTimeVal_tv;
-    private static int memTimeArr[] = {10,20,30,40,50,60,
-                                       130,140,150,160,170,180};
     private static int indMemTimeArr = 0;
 
-    public static int getThingNum(int index)
-    {
-        return numThingsArr[index];
-    }
-
-    public static int getMemTime(int index)
-    {
-        return memTimeArr[index];
-    }
+    private Button gotoGame_btn;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-/*
-        exitGame_ib.setOnClickListener(new View.OnClickListener() {
+
+        gotoGame_btn = (Button) findViewById(R.id.gotoGame_btn);
+
+        gotoGame_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                call_exit_dlg();
-//                finishAffinity();
+                Intent intent = new Intent(MainActivity.this, MemorizeActivity.class);
+                startActivity(intent);
             }
         });
-
- */
 
     }
     @Override
