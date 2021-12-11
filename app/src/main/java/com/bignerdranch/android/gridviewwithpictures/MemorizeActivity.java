@@ -1,5 +1,7 @@
 package com.bignerdranch.android.gridviewwithpictures;
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.pm.ActivityInfo;
@@ -16,18 +18,23 @@ import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.GridView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 //import static com.bignerdranch.android.gridviewwithpictures.MainActivity.*;
 import static com.bignerdranch.android.gridviewwithpictures.MySettings.*;
 
+import java.util.List;
+
 public class MemorizeActivity extends AppCompatActivity {
+    private PictRes pictRes = PictRes.instance();
     private int state = 0; //отслеживает состояние активности
-    private GridView gridView;
-    private int tblLayW;
+    public GridView grid;
     private int nThings; //число картинок для запоминания
     private int memTime; //время для запоминания (сек)
-    private int nRow; //число строк tblLay
-    private int nCol; //число столбцов tblLay
+    private int rowsNum; //число строк grid
+    private int columnsNum; //число столбцов grid
+    public int cellW;
+    private ImageAdapter adapter;
 
 
 
@@ -42,10 +49,10 @@ public class MemorizeActivity extends AppCompatActivity {
         nThings = getThingNum(index);
         index = settings.getIndMemTimeArr();
         memTime = getMemTime(index);
-        nRow = MIN_NUM_THINGS;
-        nCol = nThings / nRow;
+        rowsNum = MIN_NUM_THINGS;
+        columnsNum = nThings / rowsNum;
 
-        gridView = (GridView) findViewById(R.id.gridView);
+        grid = (GridView) findViewById(R.id.grid);
 
         showTable();
     }
@@ -61,15 +68,33 @@ public class MemorizeActivity extends AppCompatActivity {
     }
 
     private void showTable() {
-        gridView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+        grid.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                                        int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 if (left == 0 && top == 0 && right == 0 && bottom == 0)
                     return;
-                gridView.removeOnLayoutChangeListener(this);
-                tblLayW = gridView.getWidth();
-                int cellW = 0;//(tblLayW - (nCol - 1) * gap) / nRow;
+
+                grid.removeOnLayoutChangeListener(this);
+
+                int gridW = grid.getWidth();
+
+                grid.setNumColumns(columnsNum);
+
+                gridW -= (grid.getPaddingLeft() + grid.getPaddingRight());
+                cellW = (gridW - (columnsNum - 1) * grid.getHorizontalSpacing()) / columnsNum;
+                //подкорректируем gridw из-за ошибок округления предыдущей строки
+                gridW = cellW * columnsNum + (columnsNum - 1) * grid.getHorizontalSpacing();
+
+                grid.setLayoutParams(new LinearLayout.LayoutParams
+                        (gridW + grid.getPaddingLeft() + grid.getPaddingRight(), MATCH_PARENT));
+
+                grid.setColumnWidth(cellW);
+
+                adapter = new ImageAdapter(MemorizeActivity.this);
+                List<Integer> customArr = pictRes.getCustomArray
+                        (columnsNum * columnsNum);
+                adapter.LoadArr(customArr);
             }
         });
     }

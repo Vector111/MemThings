@@ -6,7 +6,7 @@
     android:layout_height="match_parent">
 
     <GridView
-        android:id="@+id/gridView"
+        android:id="@+id/grid"
         android:layout_width="0dp"
         android:layout_height="270dp"
         app:layout_constraintBottom_toBottomOf="parent"

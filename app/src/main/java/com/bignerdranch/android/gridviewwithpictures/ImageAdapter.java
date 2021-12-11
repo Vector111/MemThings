@@ -1,4 +1,4 @@
-/*
+
 package com.bignerdranch.android.gridviewwithpictures;
 
 import android.content.Context;
@@ -65,4 +65,3 @@ public class ImageAdapter extends BaseAdapter {
     }
 
 }
-*/

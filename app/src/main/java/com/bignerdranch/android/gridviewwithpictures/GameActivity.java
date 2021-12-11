@@ -1,4 +1,4 @@
-/*
+
 package com.bignerdranch.android.gridviewwithpictures;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -81,7 +81,7 @@ public class GameActivity extends AppCompatActivity implements DoForPositive1{
     // для каждого типа игр: 3*3, 4*4, 5*5, 6*6, 7*7, 8*8
     private ArrayList<ArrayList<Integer>> mCurrResults;
     //текущие усредненные результаты игрока (в секундах)
-    // для каждого типа игр: 3*3, 4*4, 5*5, 6*6, 7*7, 8*8
+    // для каждого типа игр:pictRes 3*3, 4*4, 5*5, 6*6, 7*7, 8*8
     private ArrayList<Integer> mCurrAvgResults;
     //текущее количество попыток по каждой игре
     // после завершения последней удачной попытки (или при прерывании текущего сеанса) это количество сбрасывается в ноль
@@ -230,7 +230,7 @@ public class GameActivity extends AppCompatActivity implements DoForPositive1{
         adapter1 = new ImageAdapter(GameActivity.this);
         adapter2 = new ImageAdapter(GameActivity.this);
 
-        Custom2 custom2 = pictRes.getTwoCustomArrays(colN * colN);
+        Custom2 custom2 = pictRes.getCustomArrays(colN * colN);
         // вычисляем рандомный номер картинки левого grid
         randCellIndOfLeftGrid = rand.nextInt(colN * colN);
         // вычисляем рандомный номер картинки правого grid
@@ -587,4 +587,3 @@ public class GameActivity extends AppCompatActivity implements DoForPositive1{
         return super.onKeyDown(keyCode, event);
     }
 }
-*/

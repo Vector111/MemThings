@@ -5,16 +5,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.*;
 
-
+/*
 class Custom2 {
     List<Integer> first;
     List<Integer> second;
 }
+*/
 
 public class PictRes {
     private static PictRes sPictRes;
     private List<Integer> mRid;
-
 
     public static PictRes instance() {
         if (sPictRes == null) {
@@ -26,7 +26,6 @@ public class PictRes {
     public int size() {
         return mRid.size();
     }
-
 
     public List<Integer> getArr() {
         return new ArrayList<>(mRid);
@@ -48,31 +47,24 @@ public class PictRes {
          return retList;
      }
 
-    public Custom2 getTwoCustomArrays(int sz) {
-    /* Функция возвращает в классе Custom2 два ArrayList-массива,
-        заполненные элементами mRid так,
+    public List<Integer> getCustomArray(int size) {
+    /* Функция возвращает ArrayList-массив,
+        заполненный элементами mRid так,
         что элементы выбираются рандомно и все отобранные элементы уникальны;
-        sz - размер каждого из двух массивов возвращаемого класса
-        и оно же число картинок каждого gridview
+        sz - размер возвращаемого массива
+        и оно же число картинок grid
     */
-        int size = sz * 2;
         Set<Integer> customSet = new LinkedHashSet<>();
         Random rand = new Random(new Date().getTime());
         while (customSet.size() <= size) {
             int nextInt = rand.nextInt(mRid.size());
             customSet.add(mRid.get(nextInt));
         }
-        Custom2 ret = new Custom2();
-        ret.first = new ArrayList<>();
-        ret.second = new ArrayList<>();
+        List<Integer> ret = new ArrayList<>();
 
         Iterator iter = customSet.iterator();
-        for (int i = 0; i < sz; i++) {
-            ret.first.add((int)iter.next());
-        }
-
-        for (int i = 0; i < sz; i++) {
-            ret.second.add((int)iter.next());
+        for (int i = 0; i < size; i++) {
+            ret.add((int)iter.next());
         }
 
         return ret;
