@@ -2,24 +2,37 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+    <TextView
+        android:id="@+id/memorizeActivityTitle_tv"
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:text="@string/memorizeActivityTitle"
+        android:textColor="@color/blue_teal"
+        android:textSize="40sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <GridView
         android:id="@+id/grid"
-        android:layout_width="0dp"
-        android:layout_height="270dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:horizontalSpacing="4dp"
+        android:stretchMode="none"
+        android:verticalSpacing="4dp"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:horizontalSpacing="4dp"
-        android:verticalSpacing="4dp"
-        android:paddingLeft="4dp"
-        android:paddingTop="4dp"
-        android:paddingRight="4dp"
-        android:stretchMode="none"
-    >
+        app:layout_constraintTop_toTopOf="parent"></GridView>
+<!--
+    android:paddingLeft="4dp"
+    android:paddingRight="4dp"
+-->
 
-    </GridView>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,4 +1,4 @@
-
+/*
 package com.bignerdranch.android.gridviewwithpictures;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -587,3 +587,4 @@ public class GameActivity extends AppCompatActivity implements DoForPositive1{
         return super.onKeyDown(keyCode, event);
     }
 }
+*/

@@ -44,7 +44,7 @@ public class ImageAdapter extends BaseAdapter {
         ImageView imageView;
         if (convertView == null) {
             imageView = new ImageView(mContext);
-            int pict_dim = ((GameActivity) mContext).gridview1.getColumnWidth();
+            int pict_dim = ((MemorizeActivity) mContext).grid.getColumnWidth();
             imageView.setLayoutParams(new GridView.LayoutParams(pict_dim, pict_dim));
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
             imageView.setPadding(0, 0, 0, 0);
