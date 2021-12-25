@@ -5,8 +5,11 @@
       <map>
         <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/layout/activity_game.xml" value="0.2925642807505212" />
         <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/layout/activity_main.xml" value="0.15324214792299898" />
-        <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/layout/activity_memorize.xml" value="0.33" />
+        <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/layout/activity_memorize.xml" value="0.25" />
+        <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/layout/activity_remember.xml" value="0.3029891304347826" />
         <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/layout/content_memorize.xml" value="0.15324214792299898" />
+        <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/layout/fragment_first.xml" value="0.3029891304347826" />
+        <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/layout/fragment_second.xml" value="0.3029891304347826" />
         <entry key="..\:/my_android/Android_Projects/MemThings/app/src/main/res/drawable-anydpi/correct.xml" value="0.3098958333333333" />
         <entry key="..\:/my_android/Android_Projects/MemThings/app/src/main/res/drawable-anydpi/incorrect.xml" value="0.3098958333333333" />
         <entry key="..\:/my_android/Android_Projects/MemThings/app/src/main/res/drawable-v24/background_splash.xml" value="0.18703703703703703" />

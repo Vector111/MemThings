@@ -1,13 +1,17 @@
 package com.bignerdranch.android.gridviewwithpictures;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.media.MediaPlayer;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.content.Context;
+import android.media.MediaPlayer;
 
 class ImageButtonOperations {
     public static void setImageButtonEnabled(Context ctxt, boolean enabled, ImageButton item,
@@ -113,5 +117,30 @@ class Settings {
     //читаем индекс массива времен запоминания
     public int getIndMemTimeArr() {
         return apppref.getInt("indMemTimeArr", 0);
+    }
+}
+
+class Sounds {
+    public static void startPlaying(Context context, int rid) {
+        MediaPlayer mediaPlayer = MediaPlayer.create(context, rid);
+        mediaPlayer.start();
+    }
+}
+
+class MyConvertions {
+    public static final int[] EMPTY_INT_ARRAY = new int[0];
+
+    public static int[] toPrimitive(Integer[] array) {
+        if (array == null) {
+            return null;
+        }
+        if (array.length == 0) {
+            return EMPTY_INT_ARRAY;
+        }
+        int[] result = new int[array.length];
+        for (int i = 0; i < array.length; ++i) {
+            result[i] = array[i].intValue();
+        }
+        return result;
     }
 }

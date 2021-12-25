@@ -3,6 +3,7 @@ package com.bignerdranch.android.gridviewwithpictures;
 import androidx.appcompat.app.AppCompatActivity;
 import static com.bignerdranch.android.gridviewwithpictures.ImageButtonOperations.*;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
@@ -42,8 +43,7 @@ public class MainActivity extends AppCompatActivity implements DoForPositive1 {
         gotoGame_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, MemorizeActivity.class);
-                startActivity(intent);
+                goToMemorizeActivity();
             }
         });
 
@@ -89,7 +89,11 @@ public class MainActivity extends AppCompatActivity implements DoForPositive1 {
 
     //вызывается из диалога DlgWithTwoButtons
     public void fDo () {
-            finish(); //покидаем Activity
+
+//        finish(); //покидаем Activity
+//        System.exit(0);
+        //        android.os.Process.killProcess(android.os.Process.myPid());
+        this.finishAffinity();
     }
 
     @Override
@@ -105,5 +109,10 @@ public class MainActivity extends AppCompatActivity implements DoForPositive1 {
         DlgWithTwoButtons myDialogFragment = new DlgWithTwoButtons(getString(R.string.exitGameActivity), getString(R.string.areYouSure),
                 getString(R.string.yes_option), getString(R.string.no_option), this);
         myDialogFragment.show(getSupportFragmentManager(), "myDialog");
+    }
+
+    private void goToMemorizeActivity() {
+        Intent intent = MemorizeActivity.newIntent(MainActivity.this);
+        startActivity(intent);
     }
 }
