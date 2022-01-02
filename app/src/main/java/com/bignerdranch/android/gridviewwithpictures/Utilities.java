@@ -3,15 +3,35 @@ package com.bignerdranch.android.gridviewwithpictures;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.AssetManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
+import android.util.Pair;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.content.Context;
 import android.media.MediaPlayer;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import static com.bignerdranch.android.gridviewwithpictures.MyFiles.*;
 
 class ImageButtonOperations {
     public static void setImageButtonEnabled(Context ctxt, boolean enabled, ImageButton item,
@@ -88,8 +108,11 @@ class EnterInt {
 }
 
 class Settings {
+
     private static SharedPreferences apppref;
     public static final String APP_PREFERENCES = "apppref";
+    public static final int SEL_PICTURES_NUM = 66;
+
     Settings(Context context) {
         apppref = context.getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
     }
@@ -121,8 +144,9 @@ class Settings {
 }
 
 class Sounds {
+    static MediaPlayer mediaPlayer;
     public static void startPlaying(Context context, int rid) {
-        MediaPlayer mediaPlayer = MediaPlayer.create(context, rid);
+        mediaPlayer = MediaPlayer.create(context, rid);
         mediaPlayer.start();
     }
 }
@@ -142,5 +166,83 @@ class MyConvertions {
             result[i] = array[i].intValue();
         }
         return result;
+    }
+}
+
+class MyRandoms {
+
+    /*
+        Функция возвращает из диапазона натуральных чисел [1...n]
+        случайное подмножество уникальных чисел в количестве m (m <= n)
+    */
+    public static Set<Integer> getRandomUniqSubset(int m, int n)
+    {
+        Set<Integer> set = new LinkedHashSet<>();
+        if (n == m) {
+            for (int i = 1; i <= m; ++i)
+                set.add(i);
+
+        } else { // m < n
+            Random rand = new Random(new Date().getTime());
+            while (set.size() <= m) {
+                int k = rand.nextInt(n + 1);
+                if (k > 0)
+                    set.add(rand.nextInt(n));
+            }
+
+        }
+        return set;
+    }
+}
+
+class MyFiles {
+    /*
+        Функция читает текстовый файл с именем fn,
+        каждая строка которого представляет собой пару String,
+        разделенных ";".
+        Функция возвращает список пар таких строк.
+        Функция игнорирует пустые строки файла,
+        а также оставляет только уникальные
+        (т.е. первые и вторые элементы строк не будут повторяться)
+    */
+    public static List<Pair<String, String>> getPairsList(Context context, String fn)
+    {
+        AssetManager am = context.getAssets();
+        String line = null;
+        InputStream is = null;
+        List<Pair<String, String>> ret = new ArrayList<>();
+        Set<String> set1 = new HashSet<>();
+        Set<String> set2 = new HashSet<>();
+        try {
+            is = am.open(fn);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                String[] tmp = line.split(";");
+//                String[] tmp = line.split("\\s+");
+                if (tmp.length != 2)
+                    continue;
+                String s1 = tmp[0];
+                String s2 = tmp[1];
+                s1 = s1.trim();
+                s2 = s2.trim();
+                if((!set1.contains(s1)) && (!set2.contains(s2)))
+                    ret.add(new Pair<>(s1, s2));
+                else{
+                    set1.add(s1);
+                    set2.add(s2);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return ret;
     }
 }

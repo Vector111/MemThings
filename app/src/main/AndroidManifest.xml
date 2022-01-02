@@ -28,7 +28,6 @@
             android:label="@string/title_activity_memorize"
             android:theme="@style/Theme.GridViewWithPictures.NoActionBar" />
         <activity android:name=".MainActivity" />
-        <activity android:name=".GameActivity" />
     </application>
 
 </manifest>

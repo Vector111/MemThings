@@ -14,6 +14,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.media.MediaPlayer;
 import android.os.CountDownTimer;
+import android.util.Pair;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -27,11 +28,18 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 //import static com.bignerdranch.android.gridviewwithpictures.MainActivity.*;
 import static com.bignerdranch.android.gridviewwithpictures.MySettings.*;
+import static com.bignerdranch.android.gridviewwithpictures.Settings.*;
+import static com.bignerdranch.android.gridviewwithpictures.MyFiles.*;
 import static com.bignerdranch.android.gridviewwithpictures.Sounds.*;
 import static com.bignerdranch.android.gridviewwithpictures.MyConvertions.*;
+import static com.bignerdranch.android.gridviewwithpictures.MyRandoms.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public class MemorizeActivity extends AppCompatActivity implements DoForPositive1 {
 //    private int state = 0; //отслеживает состояние активности
@@ -50,13 +58,11 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
     private ImageAdapter adapter;
     private TextView timer_tv;
     private Button next_btn;
-
     private SolveTimer timer;
-
-
     boolean goOutFlag = false;
-
-    List<Integer> customArr;
+    private ArrayList<Integer> customArr;
+    private ArrayList<Pair<String, Integer>> pairsArrSI; //массив уникальных пар,
+            // где pair.first = <название картинки> и pair.second = <идентификатор ресурса картинки> )
 
     public static Intent newIntent(Context context) {
         Intent intent = new Intent(context, MemorizeActivity.class);
@@ -77,6 +83,9 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
         columnsNum = nThings / rowsNum;
         int index2 = settings.getIndMemTimeArr();
         memTime = getMemTime(index2);
+
+        // Генерируем pairsArrSI
+        formPairsArrSI();
 
         mainLayout = (ConstraintLayout) findViewById(R.id.mainLayout);
         upSubLayout = (ConstraintLayout) findViewById(R.id.upSubLayout);
@@ -104,12 +113,52 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
 //        showTable();
 //        int kkk = 0;
 //    }
-    private void goToRememberActivity() {
-        Integer[] arr = customArr.toArray(new Integer[0]);
+    private void formPairsArrSI()
+    {
+        // Читаем из файла "cards.txt" список пар строк,
+        // где pair.first = <название картинки> и
+        // pair.second = <имя файла картинки (без расширения)>
+        ArrayList<Pair<String, String>> pairsArr = (ArrayList)getPairsList(this, "cards.txt");
+        //Получим выборку SEL_PICTURES_NUM случайных натуральных чисел из диапазона [1...n]
+        HashSet<Integer> set = (HashSet)getRandomUniqSubset(SEL_PICTURES_NUM, pairsArr.size());
+        //Построим выборку из вектора pairsArr в соответствии с set
+        ArrayList<Pair<String, String>> selPairsArr = new ArrayList<>();
+        for (int i = 0; i < pairsArr.size(); ++i){
+            if (set.contains(i + 1)) {
+                selPairsArr.add(pairsArr.get(i));
+            }
+        }
+        //Заполняем pairsArrSI
+        for (int i = 0; i < selPairsArr.size(); ++i){
+            int resID = getResources().getIdentifier(selPairsArr.get(i).second, "drawable", getPackageName());
+            Pair<String, String> pair1 = selPairsArr.get(i);
+            Pair<String, Integer> pair2 = new Pair<>(pair1.first, resID);
+            pairsArrSI.add(pair2);
+        }
+    }
+    private void formCustomArr()
+    {
+        // Получим выборку для запоминания картинок
+        // rowsNum * columnsNum случайных натуральных чисел из диапазона [1...n]
+        HashSet<Integer> set = (HashSet)getRandomUniqSubset(rowsNum * columnsNum, pairsArrSI.size());
+        // Адаптируем эту выборку для customArr
+        customArr = new ArrayList<>();
+        Iterator iter = set.iterator();
+        for (int i = 0; i < set.size(); i++) {
+            customArr.add((int)iter.next());
+        }
+    }
 
-        int[] arr_int = toPrimitive(arr);
-
-        Intent intent = RememberActivity.newIntent(MemorizeActivity.this, arr_int);
+    private void goToRememberActivity()
+    {
+        ArrayList<String> alS = new ArrayList<>();
+        ArrayList<Integer> alI = new ArrayList<>();
+        for (int i = 0; i < pairsArrSI.size(); ++i){
+            alS.add(pairsArrSI.get(i).first);
+            alI.add(pairsArrSI.get(i).second);
+        }
+        Intent intent = RememberActivity.newIntent(MemorizeActivity.this,
+            alS, alI, customArr);
         startActivity(intent);
     }
     private void showTable() {
@@ -159,7 +208,10 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
                 grid.setColumnWidth(cellDim);
 
                 adapter = new ImageAdapter(MemorizeActivity.this);
-                customArr = pictRes.getCustomArray(rowsNum * columnsNum);
+
+                // Генерируем customArr
+                formCustomArr();
+
                 adapter.LoadArr(customArr);
                 grid.setAdapter(adapter);
 
@@ -171,16 +223,6 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
     private void timerStart() {
         timer = new SolveTimer((memTime + 1) * 1000, 1000);
         timer.myStart();
-//        new CountDownTimer((memTime + 1) * 1000, 1000) {
-//            public void onTick(long millisUntilFinished) {
-//                showRemainingTime(millisUntilFinished); //toDo
-//                if(goOutFlag)
-//                    this.cancel();
-//            }
-//            public void onFinish() {
-//                goToRememberActivity(MemorizeActivity.this, RememberActivity.class);
-//            }
-//        }.start();
     }
 
     private class SolveTimer extends CountDownTimer {
@@ -206,7 +248,7 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
         @Override
         public void onFinish() {
             clearContent();
-            startPlaying(MemorizeActivity.this, R.raw.metronom_finish);
+           /* startPlaying(MemorizeActivity.this, R.raw.metronom_finish);*/
 //            goToRememberActivity(MemorizeActivity.this, RememberActivity.class);
         }
 
@@ -214,7 +256,7 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
         public void onTick(long millisUntilFinished) {
             remainSec = millisUntilFinished / 1000;
             showRemainingTime(millisUntilFinished); //toDo
-            if (remainSec <= 4 && remainSec >= 1)
+            if (remainSec == 7)
                 startPlaying(MemorizeActivity.this, R.raw.metronom_before_finish);
 
             if(goOutFlag)
@@ -223,6 +265,8 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
 
         public void myCancel() {
             cancel();
+            if (mediaPlayer != null)
+                mediaPlayer.stop();
             started = false;
         }
     }
@@ -254,7 +298,7 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
         timer.myCancel();
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
-        finish();
+//        finish();
 //        this.finishAffinity();
     }
 

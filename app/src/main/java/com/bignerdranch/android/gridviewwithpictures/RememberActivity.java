@@ -7,16 +7,31 @@ import androidx.constraintlayout.widget.ConstraintSet;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Pair;
+
+import static com.bignerdranch.android.gridviewwithpictures.MyFiles.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class RememberActivity extends AppCompatActivity {
-    private static final String EXTRA_MEMORIZED_IDS =
-        "com.bignerdranch.android.gridviewwithpictures.memorized_ids";
+    private static final String EXTRA_ALS =
+        "com.bignerdranch.android.gridviewwithpictures.als";
+    private static final String EXTRA_ALI =
+        "com.bignerdranch.android.gridviewwithpictures.ali";
+    private static final String EXTRA_CUSTOM_ARR =
+        "com.bignerdranch.android.gridviewwithpictures.customArr";
 
-    private int [] memorizedIdsArr;
+    private ArrayList<Integer> customArr; //выборка запоминаемых юзером ресурных id картинок
 
-    public static Intent newIntent(Context context, int[] arr) {
+    public static Intent newIntent(Context context, ArrayList<String> alS,
+        ArrayList<Integer> alI, ArrayList<Integer> customArr)
+    {
         Intent intent = new Intent(context, RememberActivity.class);
-        intent.putExtra(EXTRA_MEMORIZED_IDS, arr);
+        Bundle bundle = new Bundle();
+        bundle.putStringArrayList(EXTRA_ALS, alS);
+        bundle.putIntegerArrayList(EXTRA_ALI, alI);
+        bundle.putIntegerArrayList(EXTRA_CUSTOM_ARR, customArr);
         return intent;
     }
 
@@ -24,7 +39,10 @@ public class RememberActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_remember);
-        memorizedIdsArr = getIntent().getIntArrayExtra(EXTRA_MEMORIZED_IDS);
+
+        ArrayList<String> alS = getIntent().getStringArrayListExtra(EXTRA_ALS);
+        ArrayList<Integer> alI = getIntent().getIntegerArrayListExtra(EXTRA_ALI);
+        customArr = getIntent().getIntegerArrayListExtra(EXTRA_CUSTOM_ARR);
 
 
         ConstraintLayout layout = (ConstraintLayout) findViewById(R.id.layout);
@@ -38,5 +56,9 @@ public class RememberActivity extends AppCompatActivity {
             chainIds, weights, ConstraintSet.CHAIN_SPREAD);
 
         set.applyTo(layout);
+
+        List<Pair<String,String>> list = getPairsList(this, "cards.txt");
+        int ppp = 0;
+
     }
 }
