@@ -55,7 +55,7 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
     private int memTime; //время для запоминания (сек)
     private int rowsNum; //число строк grid
     private int columnsNum; //число столбцов grid
-    private ImageAdapter adapter;
+    private MyAdapter adapter;
     private TextView timer_tv;
     private Button next_btn;
     private SolveTimer timer;
@@ -119,33 +119,36 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
         // где pair.first = <название картинки> и
         // pair.second = <имя файла картинки (без расширения)>
         ArrayList<Pair<String, String>> pairsArr = (ArrayList)getPairsList(this, "cards.txt");
-        //Получим выборку SEL_PICTURES_NUM случайных натуральных чисел из диапазона [1...n]
+        //Получим выборку SEL_PICTURES_NUM случайных натуральных чисел из диапазона [0...n-1]
         HashSet<Integer> set = (HashSet)getRandomUniqSubset(SEL_PICTURES_NUM, pairsArr.size());
         //Построим выборку из вектора pairsArr в соответствии с set
         ArrayList<Pair<String, String>> selPairsArr = new ArrayList<>();
         for (int i = 0; i < pairsArr.size(); ++i){
-            if (set.contains(i + 1)) {
+            if (set.contains(i)) {
                 selPairsArr.add(pairsArr.get(i));
             }
         }
         //Заполняем pairsArrSI
+        pairsArrSI = new ArrayList<>();
         for (int i = 0; i < selPairsArr.size(); ++i){
             int resID = getResources().getIdentifier(selPairsArr.get(i).second, "drawable", getPackageName());
             Pair<String, String> pair1 = selPairsArr.get(i);
             Pair<String, Integer> pair2 = new Pair<>(pair1.first, resID);
             pairsArrSI.add(pair2);
         }
+        int kkk = 0;
     }
     private void formCustomArr()
     {
         // Получим выборку для запоминания картинок
-        // rowsNum * columnsNum случайных натуральных чисел из диапазона [1...n]
+        // rowsNum * columnsNum случайных натуральных чисел из диапазона [0...n-1]
         HashSet<Integer> set = (HashSet)getRandomUniqSubset(rowsNum * columnsNum, pairsArrSI.size());
         // Адаптируем эту выборку для customArr
         customArr = new ArrayList<>();
         Iterator iter = set.iterator();
         for (int i = 0; i < set.size(); i++) {
-            customArr.add((int)iter.next());
+            Pair<String, Integer> pair = pairsArrSI.get((int)iter.next());
+            customArr.add(pair.second);
         }
     }
 
@@ -207,7 +210,7 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
 
                 grid.setColumnWidth(cellDim);
 
-                adapter = new ImageAdapter(MemorizeActivity.this);
+                adapter = new MyAdapter(MemorizeActivity.this, 1, cellDim, cellDim);
 
                 // Генерируем customArr
                 formCustomArr();

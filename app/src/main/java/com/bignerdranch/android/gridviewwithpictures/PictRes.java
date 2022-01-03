@@ -5,13 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.*;
 
-/*
-class Custom2 {
-    List<Integer> first;
-    List<Integer> second;
-}
-*/
-
 public class PictRes {
     private static PictRes sPictRes;
     private List<Integer> mRid;
@@ -72,6 +65,7 @@ public class PictRes {
 
     private PictRes() {
         mRid = new ArrayList<>();
+/*
         Integer[] arr = {
                 R.drawable.pict1,   R.drawable.pict2,   R.drawable.pict3,   R.drawable.pict4,   R.drawable.pict5,
                 R.drawable.pict6,   R.drawable.pict7,   R.drawable.pict8,   R.drawable.pict9,   R.drawable.pict10,
@@ -116,5 +110,6 @@ public class PictRes {
                 R.drawable.pict201, R.drawable.pict202, R.drawable.pict203, R.drawable.pict204, R.drawable.pict205
         };
         Collections.addAll(mRid, arr);
+ */
     }
 }

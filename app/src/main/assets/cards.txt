@@ -5,10 +5,10 @@
 бегемот;			hippopotamus
 белка;				squirrel
 бизон;				bison
-белый медведь;		sea-bear
+белый медведь;		sea_bear
 божья коровка;		ladybug
 бурундук;			ground_squirrel
-верблюд;			desert-shipkangaroo
+верблюд;			desert_ship
 волк;				wolf
 ворона;				crow
 выдра;				otter
@@ -38,7 +38,7 @@
 кобра;				cobra
 жираф;				giraffe
 коза;				goat
-колибри;			fly-bird
+колибри;			fly_bird
 комар;				mosquito
 корова;				cow
 косатка;			orca
@@ -50,7 +50,7 @@
 курица;				hen
 ласточка;			martlet
 лебедь;				swan
-лев;				lionпеликан
+лев;				lion
 леопард;			leopard
 летучая мышь;		bat
 лещ;				bream
@@ -72,7 +72,7 @@
 овца;				sheep
 окунь;				perch
 олень;				dear
-орёл;				eaglemeerkat
+орёл;				eagle
 павлин;				peacock
 панда;				panda
 пеликан;			pelican

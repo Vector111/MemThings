@@ -111,7 +111,7 @@ class Settings {
 
     private static SharedPreferences apppref;
     public static final String APP_PREFERENCES = "apppref";
-    public static final int SEL_PICTURES_NUM = 66;
+    public static final int SEL_PICTURES_NUM = 119;
 
     Settings(Context context) {
         apppref = context.getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
@@ -172,23 +172,20 @@ class MyConvertions {
 class MyRandoms {
 
     /*
-        Функция возвращает из диапазона натуральных чисел [1...n]
+        Функция возвращает из диапазона целых чисел [0...n-1]
         случайное подмножество уникальных чисел в количестве m (m <= n)
     */
     public static Set<Integer> getRandomUniqSubset(int m, int n)
     {
         Set<Integer> set = new LinkedHashSet<>();
         if (n == m) {
-            for (int i = 1; i <= m; ++i)
+            for (int i = 0; i < m; ++i)
                 set.add(i);
 
         } else { // m < n
             Random rand = new Random(new Date().getTime());
-            while (set.size() <= m) {
-                int k = rand.nextInt(n + 1);
-                if (k > 0)
-                    set.add(rand.nextInt(n));
-            }
+            while (set.size() < m)
+                set.add(rand.nextInt(n));
 
         }
         return set;

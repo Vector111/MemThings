@@ -8,6 +8,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Pair;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.GridView;
+import android.widget.LinearLayout;
 
 import static com.bignerdranch.android.gridviewwithpictures.MyFiles.*;
 
@@ -22,16 +27,20 @@ public class RememberActivity extends AppCompatActivity {
     private static final String EXTRA_CUSTOM_ARR =
         "com.bignerdranch.android.gridviewwithpictures.customArr";
 
+    public ConstraintLayout mainLayout;
+    public GridView seek_grid;
+
+    private ArrayList<String> alS;
+    private ArrayList<Integer> alI;
     private ArrayList<Integer> customArr; //выборка запоминаемых юзером ресурных id картинок
 
     public static Intent newIntent(Context context, ArrayList<String> alS,
         ArrayList<Integer> alI, ArrayList<Integer> customArr)
     {
         Intent intent = new Intent(context, RememberActivity.class);
-        Bundle bundle = new Bundle();
-        bundle.putStringArrayList(EXTRA_ALS, alS);
-        bundle.putIntegerArrayList(EXTRA_ALI, alI);
-        bundle.putIntegerArrayList(EXTRA_CUSTOM_ARR, customArr);
+        intent.putStringArrayListExtra(EXTRA_ALS, alS);
+        intent.putIntegerArrayListExtra(EXTRA_ALI, alI);
+        intent.putIntegerArrayListExtra(EXTRA_CUSTOM_ARR, customArr);
         return intent;
     }
 
@@ -40,25 +49,21 @@ public class RememberActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_remember);
 
-        ArrayList<String> alS = getIntent().getStringArrayListExtra(EXTRA_ALS);
-        ArrayList<Integer> alI = getIntent().getIntegerArrayListExtra(EXTRA_ALI);
+        alS = getIntent().getStringArrayListExtra(EXTRA_ALS);
+        alI = getIntent().getIntegerArrayListExtra(EXTRA_ALI);
         customArr = getIntent().getIntegerArrayListExtra(EXTRA_CUSTOM_ARR);
 
+        mainLayout = (ConstraintLayout) findViewById(R.id.mainLayout1);
 
-        ConstraintLayout layout = (ConstraintLayout) findViewById(R.id.layout);
-        ConstraintSet set = new ConstraintSet();
-        set.clone(layout);
-
-        int[] chainIds = { R.id.button, R.id.button2 }; // the ids you set on your views above
-        float[] weights = { 1, 5 };
-        set.createHorizontalChain(ConstraintSet.PARENT_ID, ConstraintSet.LEFT,
-            ConstraintSet.PARENT_ID, ConstraintSet.RIGHT,
-            chainIds, weights, ConstraintSet.CHAIN_SPREAD);
-
-        set.applyTo(layout);
-
-        List<Pair<String,String>> list = getPairsList(this, "cards.txt");
-        int ppp = 0;
+        // Get a reference to the AutoCompleteTextView in the layout
+        AutoCompleteTextView textView = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView);
+        // Get the string array
+        String[] countries = {"Один", "Два", "Три", "Четыре", "Пять",
+            "Шесть", "Семь", "Восемь", "Девять", "Десять"};
+        // Create the adapter and set it to the AutoCompleteTextView
+        ArrayAdapter<String> adapter =
+            new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, countries);
+        textView.setAdapter(adapter);
 
     }
 }

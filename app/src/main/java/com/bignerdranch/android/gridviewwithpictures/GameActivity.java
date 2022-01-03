@@ -44,7 +44,7 @@ public class GameActivity extends AppCompatActivity implements DoForPositive1{
 
 //    private boolean allowGridClicks = false;
 
-    private ImageAdapter adapter1, adapter2;
+    private MyAdapter adapter1, adapter2;
     private TextView mSelectText;
 
     public LinearLayout mainLayout0, mainLayout;
@@ -227,8 +227,8 @@ public class GameActivity extends AppCompatActivity implements DoForPositive1{
         gridview1.setColumnWidth(colW);
         gridview2.setColumnWidth(colW);
 
-        adapter1 = new ImageAdapter(GameActivity.this);
-        adapter2 = new ImageAdapter(GameActivity.this);
+        adapter1 = new MyAdapter(GameActivity.this);
+        adapter2 = new MyAdapter(GameActivity.this);
 
         Custom2 custom2 = pictRes.getCustomArrays(colN * colN);
         // вычисляем рандомный номер картинки левого grid
