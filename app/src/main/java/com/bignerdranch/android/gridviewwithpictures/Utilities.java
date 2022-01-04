@@ -111,7 +111,6 @@ class Settings {
 
     private static SharedPreferences apppref;
     public static final String APP_PREFERENCES = "apppref";
-    public static final int SEL_PICTURES_NUM = 119;
 
     Settings(Context context) {
         apppref = context.getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
@@ -167,6 +166,14 @@ class MyConvertions {
         }
         return result;
     }
+
+    public static Set<Integer> convertListToSet(List<Integer> list) {
+        HashSet<Integer> ret = new HashSet<>();
+        for (int i = 0; i < list.size(); ++i) {
+            ret.add(list.get(i));
+        }
+        return ret;
+    }
 }
 
 class MyRandoms {
@@ -199,10 +206,10 @@ class MyFiles {
         разделенных ";".
         Функция возвращает список пар таких строк.
         Функция игнорирует пустые строки файла,
-        а также оставляет только уникальные
-        (т.е. первые и вторые элементы строк не будут повторяться)
+        а также оставляет только уникальные первые элементы строк,
+        и уникальные вторые (если str2_uniq = true)
     */
-    public static List<Pair<String, String>> getPairsList(Context context, String fn)
+    public static List<Pair<String, String>> getPairsList(Context context, String fn, boolean str2_uniq)
     {
         AssetManager am = context.getAssets();
         String line = null;
@@ -223,12 +230,12 @@ class MyFiles {
                 String s2 = tmp[1];
                 s1 = s1.trim();
                 s2 = s2.trim();
-                if((!set1.contains(s1)) && (!set2.contains(s2)))
+                if ((!set1.contains(s1) && !str2_uniq) || (!set1.contains(s1) && str2_uniq) && !set2.contains(s2)) {
                     ret.add(new Pair<>(s1, s2));
-                else{
-                    set1.add(s1);
-                    set2.add(s2);
                 }
+                set1.add(s1);
+                if(str2_uniq)
+                    set2.add(s2);
             }
         } catch (IOException e) {
             e.printStackTrace();

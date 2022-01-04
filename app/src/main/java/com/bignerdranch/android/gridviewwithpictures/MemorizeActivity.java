@@ -36,6 +36,8 @@ import static com.bignerdranch.android.gridviewwithpictures.MyRandoms.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -61,8 +63,12 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
     private SolveTimer timer;
     boolean goOutFlag = false;
     private ArrayList<Integer> customArr;
-    private ArrayList<Pair<String, Integer>> pairsArrSI; //массив уникальных пар,
-            // где pair.first = <название картинки> и pair.second = <идентификатор ресурса картинки> )
+    private ArrayList<Pair<String, Integer>> pairsArrSI_IdMayNotUniq; //массив уникальных пар,
+            // где pair.first = <название картинки>,pair.second = <идентификатор ресурса картинки>
+            // pair.second не обязаны быть уникальными
+    private ArrayList<Pair<String, Integer>> pairsArrSI_IdUniq; //массив уникальных пар,
+            // где pair.first = <название картинки>,pair.second = <идентификатор ресурса картинки>
+            // pair.second обязаны быть уникальными
 
     public static Intent newIntent(Context context) {
         Intent intent = new Intent(context, MemorizeActivity.class);
@@ -115,39 +121,45 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
 //    }
     private void formPairsArrSI()
     {
+        pairsArrSI_IdMayNotUniq = form_pairsArrSI_withFlag(false);
+        // Сортируем pairsArrSI_IdMayNotUniq по названию фото (по возрастанию)
+        Collections.sort(pairsArrSI_IdMayNotUniq, new Comparator<Pair<String, Integer>>() {
+            @Override
+            public int compare(final Pair<String, Integer> o1, final Pair<String, Integer> o2) {
+                return (o1.first.compareTo(o2.first));
+            }
+        });
+        pairsArrSI_IdUniq = form_pairsArrSI_withFlag(true);
+    }
+
+    private ArrayList<Pair<String, Integer>> form_pairsArrSI_withFlag(boolean str2_uniq)
+    {
         // Читаем из файла "cards.txt" список пар строк,
         // где pair.first = <название картинки> и
         // pair.second = <имя файла картинки (без расширения)>
-        ArrayList<Pair<String, String>> pairsArr = (ArrayList)getPairsList(this, "cards.txt");
-        //Получим выборку SEL_PICTURES_NUM случайных натуральных чисел из диапазона [0...n-1]
-        HashSet<Integer> set = (HashSet)getRandomUniqSubset(SEL_PICTURES_NUM, pairsArr.size());
-        //Построим выборку из вектора pairsArr в соответствии с set
-        ArrayList<Pair<String, String>> selPairsArr = new ArrayList<>();
-        for (int i = 0; i < pairsArr.size(); ++i){
-            if (set.contains(i)) {
-                selPairsArr.add(pairsArr.get(i));
-            }
-        }
-        //Заполняем pairsArrSI
-        pairsArrSI = new ArrayList<>();
+        // если str2_uniq = false, то множество pair.second не обязано быть уникальным)
+        ArrayList<Pair<String, String>> selPairsArr = (ArrayList)getPairsList(this, "cards.txt", str2_uniq);
+        //Заполняем ret
+        ArrayList<Pair<String, Integer>> ret = new ArrayList<>();
         for (int i = 0; i < selPairsArr.size(); ++i){
             int resID = getResources().getIdentifier(selPairsArr.get(i).second, "drawable", getPackageName());
             Pair<String, String> pair1 = selPairsArr.get(i);
             Pair<String, Integer> pair2 = new Pair<>(pair1.first, resID);
-            pairsArrSI.add(pair2);
+            ret.add(pair2);
         }
-        int kkk = 0;
+        return ret;
     }
+
     private void formCustomArr()
     {
         // Получим выборку для запоминания картинок
-        // rowsNum * columnsNum случайных натуральных чисел из диапазона [0...n-1]
-        HashSet<Integer> set = (HashSet)getRandomUniqSubset(rowsNum * columnsNum, pairsArrSI.size());
+        // rowsNum * columnsNum случайных натуральных чисел из диапазона [0 ... (pairsArrSI_IdUniq - 1)]
+        HashSet<Integer> set = (HashSet)getRandomUniqSubset(rowsNum * columnsNum, pairsArrSI_IdUniq.size());
         // Адаптируем эту выборку для customArr
         customArr = new ArrayList<>();
         Iterator iter = set.iterator();
         for (int i = 0; i < set.size(); i++) {
-            Pair<String, Integer> pair = pairsArrSI.get((int)iter.next());
+            Pair<String, Integer> pair = pairsArrSI_IdUniq.get((int)iter.next());
             customArr.add(pair.second);
         }
     }
@@ -156,9 +168,9 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
     {
         ArrayList<String> alS = new ArrayList<>();
         ArrayList<Integer> alI = new ArrayList<>();
-        for (int i = 0; i < pairsArrSI.size(); ++i){
-            alS.add(pairsArrSI.get(i).first);
-            alI.add(pairsArrSI.get(i).second);
+        for (int i = 0; i < pairsArrSI_IdMayNotUniq.size(); ++i){
+            alS.add(pairsArrSI_IdMayNotUniq.get(i).first);
+            alI.add(pairsArrSI_IdMayNotUniq.get(i).second);
         }
         Intent intent = RememberActivity.newIntent(MemorizeActivity.this,
             alS, alI, customArr);
