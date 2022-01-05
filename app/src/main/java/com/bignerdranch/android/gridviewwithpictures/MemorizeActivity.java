@@ -14,12 +14,16 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.media.MediaPlayer;
 import android.os.CountDownTimer;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Pair;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -44,13 +48,9 @@ import java.util.List;
 import java.util.Set;
 
 public class MemorizeActivity extends AppCompatActivity implements DoForPositive1 {
-//    private int state = 0; //отслеживает состояние активности
     public ConstraintLayout mainLayout;
     public ConstraintLayout upSubLayout;
-//    public ConstraintLayout subLayout;
     public GridView grid;
-
-//    private boolean spec_flag = false;
     private PictRes pictRes = PictRes.instance();
     private TextView memorizeActivityAim_tv;
     private int nThings; //число картинок для запоминания
@@ -79,8 +79,9 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_memorize);
-        setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT); //для портретного режима
-//        subLayout = (ConstraintLayout)findViewById(R.id.subLayout);
+
+        setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         Settings settings = new Settings(this);
         //читаем индекс массива числа картинок
         int index1 = settings.getIndNumThingsArr();
@@ -95,13 +96,11 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
 
         mainLayout = (ConstraintLayout) findViewById(R.id.mainLayout);
         upSubLayout = (ConstraintLayout) findViewById(R.id.upSubLayout);
-//        subLayout = (ConstraintLayout) findViewById(R.id.subLayout);
         memorizeActivityAim_tv = (TextView) findViewById(R.id.memorizeActivityAim_tv);
         grid = (GridView) findViewById(R.id.grid);
         timer_tv = (TextView) findViewById(R.id.timer_tv);
 
         next_btn = (Button) findViewById(R.id.next_btn);
-
         next_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -110,13 +109,13 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
             }
         });
 
-        showTable();
+        suspendedShow();
     }
 
 //    @Override
 //    public void onResume() {
 //        super.onResume();
-//        showTable();
+//        suspendedShow();
 //        int kkk = 0;
 //    }
     private void formPairsArrSI()
@@ -176,19 +175,18 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
             alS, alI, customArr);
         startActivity(intent);
     }
-    private void showTable() {
+
+    private void suspendedShow() {
         mainLayout.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                                        int oldLeft, int oldTop, int oldRight, int oldBottom) {
 
-//              if ((left == 0 && top == 0 && right == 0 && bottom == 0) || spec_flag)
                 if (left == 0 && top == 0 && right == 0 && bottom == 0)
                     return;
 
                 mainLayout.removeOnLayoutChangeListener(this);
 
-//                spec_flag = true;
                 int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
                 int screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
 
@@ -222,13 +220,35 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
 
                 grid.setColumnWidth(cellDim);
 
-                adapter = new MyAdapter(MemorizeActivity.this, 1, cellDim, cellDim);
+                adapter = new MyAdapter(MemorizeActivity.this, cellDim);
 
                 // Генерируем customArr
                 formCustomArr();
 
                 adapter.LoadArr(customArr);
                 grid.setAdapter(adapter);
+
+//                textView.addTextChangedListener (new TextWatcher() {
+//                    @Override
+//                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//                    }
+//                    @Override
+//                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+//                    }
+//                    @Override
+//                    public void afterTextChanged(Editable s) {
+//                        String s1 = s.toString();
+//                        int kkk = 0;
+//                    }
+//                });
+
+//                textView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+//                    @Override
+//                    public void	onItemClick(AdapterView<?> parent, View view, int position, long id)
+//                    {
+//                        int k = 0;
+//                    }
+//                });
 
                 timerStart();
             }
@@ -270,7 +290,7 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
         @Override
         public void onTick(long millisUntilFinished) {
             remainSec = millisUntilFinished / 1000;
-            showRemainingTime(millisUntilFinished); //toDo
+            showRemainingTime(millisUntilFinished);
             if (remainSec == 7)
                 startPlaying(MemorizeActivity.this, R.raw.metronom_before_finish);
 
@@ -295,10 +315,10 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
         long h = s0 / 3600;
         long m = s0 % 3600 / 60;
         long s = s0 % 60;
-        String time = String.format("%02d:%02d", m, s);
+        String time = String.format("%03d:%02d", m, s);
         timer_tv.setText(time);
-
     }
+
     public void fDo () {
 
 //        finish(); //покидаем Activity

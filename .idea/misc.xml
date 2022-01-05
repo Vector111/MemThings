@@ -7,6 +7,8 @@
         <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable-v24/background_splash.xml" value="0.1" />
         <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable/_.xml" value="0.1" />
         <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable/a.xml" value="0.1" />
+        <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable/bg_button.xml" value="0.14907407407407408" />
+        <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable/bg_button_pressed.xml" value="0.14907407407407408" />
         <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable/bg_exit_normal.xml" value="0.1" />
         <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable/bg_exit_pressed.xml" value="0.1" />
         <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable/bg_plus_minus_disabled.xml" value="0.1" />
@@ -14,10 +16,16 @@
         <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable/bg_plus_minus_pressed.xml" value="0.1" />
         <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable/bg_selector_for_exit.xml" value="0.1" />
         <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable/bg_selector_for_plus_minus.xml" value="0.1" />
+        <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable/drawable_selector_for_minus.xml" value="0.14907407407407408" />
+        <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable/drawable_selector_for_plus.xml" value="0.14907407407407408" />
+        <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable/exit_color_ib.xml" value="0.14907407407407408" />
+        <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable/ic_baseline_exit_to_app_24.xml" value="0.2064814814814815" />
+        <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable/ic_exit_normal.xml" value="0.14907407407407408" />
         <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable/ic_minus.xml" value="0.1" />
         <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable/ic_minuss.xml" value="0.1" />
         <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable/ic_svg_editor_image__1_.xml" value="0.1" />
         <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable/plus.xml" value="0.1" />
+        <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable/question_mark.xml" value="0.14907407407407408" />
         <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable/roundcorner.xml" value="0.1" />
         <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/drawable/rus1.xml" value="0.1" />
         <entry key="..\:/MyGitHubProjects/Android/MemThings/app/src/main/res/layout/activity_game.xml" value="0.2925642807505212" />
