@@ -12,18 +12,26 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Pair;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import static com.bignerdranch.android.gridviewwithpictures.MyFiles.*;
 import static com.bignerdranch.android.gridviewwithpictures.MyConvertions.*;
+import static com.bignerdranch.android.gridviewwithpictures.MyGrids.*;
+import static com.bignerdranch.android.gridviewwithpictures.MyToasts.*;
+import static com.bignerdranch.android.gridviewwithpictures.Sounds.*;
 import static com.bignerdranch.android.gridviewwithpictures.MyKeyBoard.*;
 import static com.bignerdranch.android.gridviewwithpictures.MySettings.getRowsNum;
 import static com.bignerdranch.android.gridviewwithpictures.MySettings.getThingNum;
@@ -33,6 +41,7 @@ import static com.bignerdranch.android.gridviewwithpictures.Sounds.startPlaying;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -47,6 +56,8 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
 
     public ConstraintLayout mainLayout;
     public ConstraintLayout upSubLayout;
+    private AutoCompleteTextView autoCompleteTextView;
+    private TextView warningTextView;
     public GridView grid;
     private TextView rememberActivityAim_tv;
     private int nThings; //число картинок для запоминания
@@ -68,6 +79,7 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
     // название фото в als соответствует ресурсному id соответствующего файла фото
     private ArrayList<String> alS;  // Названия фотографий
     private ArrayList<Integer> alI; // Resource IDS файлов фотографий (IDS могут повторяться)
+    private HashMap<String, Integer> map; //словарь для поиска ресурсных id по названиям фото
     private HashSet<Integer> customSet; // будет хранить множество ресурных id картинок, которые запоминал юзер
 
     private int dlg2Kind;
@@ -88,9 +100,12 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         setContentView(R.layout.activity_remember);
 
         setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
         alS = getIntent().getStringArrayListExtra(EXTRA_ALS);
         alI = getIntent().getIntegerArrayListExtra(EXTRA_ALI);
+
+        //Создаем словарь для поиска ресурсных id по названиям фото
+        map = genStringIntegerMap(alS, alI);
+
         // customArr - выборка запоминаемых юзером ресурных id картинок
         ArrayList<Integer> customArr = getIntent().getIntegerArrayListExtra(EXTRA_CUSTOM_ARR);
         customSet = (HashSet<Integer>) convertListToSet(customArr);
@@ -104,6 +119,7 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
 
         mainLayout = (ConstraintLayout) findViewById(R.id.mainLayout1);
         upSubLayout = (ConstraintLayout) findViewById(R.id.upSubLayout1);
+        warningTextView = (TextView) findViewById(R.id.warningTextView);
         rememberActivityAim_tv = (TextView) findViewById(R.id.rememberActivityAim_tv);
         grid = (GridView) findViewById(R.id.seek_grid);
         timer_tv = (TextView) findViewById(R.id.timer_tv1);
@@ -112,6 +128,11 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         ready_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                dlg2Kind = 1;
+                DlgWithTwoButtons myDialogFragment = new DlgWithTwoButtons("Уверены, что все вспомнили?", "",
+                    getString(R.string.yes_option), getString(R.string.cancel_option), RememberActivity.this);
+                myDialogFragment.show(getSupportFragmentManager(), "myDialog");
+
                 timer.myCancel();
             }
         });
@@ -187,7 +208,7 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
 //                    }
 //                });
 
-                AutoCompleteTextView autoCompleteTextView = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView);
+                autoCompleteTextView = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView);
                 String[] stringArray = Arrays.copyOf(alS.toArray(), alS.toArray().length, String[].class);
                 ArrayAdapter<String> adapter =
                     new ArrayAdapter<String>(RememberActivity.this, android.R.layout.simple_list_item_1, stringArray);
@@ -197,9 +218,36 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
                     public void	onItemClick(AdapterView<?> parent, View view, int position, long id)
                     {
                         hideKeyboard(RememberActivity.this);
+
+                        //Пытаемся вставить фото в соответствии с его названием
+                        int rid = map.get(autoCompleteTextView.getText().toString()); //id фото в соответствии с названием
+                        //Определяем позицию для вставки (попутно проверяя, не вставлен ли в grid уже такой же rid)
+                        int insertPos = -2; //позиция для вставки
+                        for (int i = 0; i < grid.getAdapter().getCount(); ++i){
+                            int rid1 = (int)((MyAdapter)grid.getAdapter()).getItem(i);
+                            if(rid1 == rid){
+                                insertPos = -1;
+                                break;
+                            }
+                            if (rid1 == R.drawable.question_mark){
+                                insertPos = i;
+                                break;
+                            }
+                        }
+                        if(insertPos < 0) { //проблемы
+                            startPlaying(RememberActivity.this, R.raw.user_error);
+                            String toastStr = (insertPos == -1) ? "Такое фото вы уже вставили!" :
+                                "Таблица уже заполнена! Либо Удалите неверный вариант, либо нажите кнопку [Готово]";
+                            myToastShow(RememberActivity.this, toastStr, Gravity.CENTER, Toast.LENGTH_SHORT );
+                        }
+                        else //нашлась доступная свободная ячейка
+                            setViewToGridCell(grid, insertPos, rid);
+
                         autoCompleteTextView.setText("");
                     }
                 });
+
+                grid.setOnItemClickListener(new GridViewOnItemClickListener());
 
                 timerStart();
             }
@@ -254,26 +302,81 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         long h = s0 / 3600;
         long m = s0 % 3600 / 60;
         long s = s0 % 60;
-        String time = String.format("%03d:%02d", m, s);
+        String time = String.format("%02d:%02d:%02d", h, m, s);
         timer_tv.setText(time);
     }
 
-    public void fDo () {
+    private class GridViewOnItemClickListener implements GridView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View v, int position, long id)
+        {
+            int pressRid = (int)((MyAdapter)parent.getAdapter()).getItem(position);
+            if(pressRid != R.drawable.question_mark)
+                setViewToGridCell(grid, position, R.drawable.question_mark);
+        }
+    }
 
-//        finish(); //покидаем Activity
-//        android.os.Process.killProcess(android.os.Process.myPid());
-//        Intent intent = new Intent(Intent.ACTION_MAIN);
-//        intent.addCategory(Intent.CATEGORY_HOME);
-//        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//        startActivity(intent);
-//        finish(); //покидаем Activity
-//        System.exit(0);
-        goOutFlag = true;
-        timer.myCancel();
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
-//        finish();
-//        this.finishAffinity();
+    private void setViewToGridCell(GridView grid, int position, int rid)
+    {
+        ImageView imageView = (ImageView) grid.getChildAt(position);
+        imageView.setImageResource(rid);
+        ((MyAdapter)grid.getAdapter()).setItem(position, rid);
+    }
+
+    public void fDo () {
+        if(dlg2Kind == 1) {
+            autoCompleteTextView.setVisibility(View.GONE);
+            ready_btn.setVisibility(View.GONE);
+            warningTextView.setVisibility(View.GONE);
+            rememberActivityAim_tv.setVisibility(View.GONE);
+            ready_btn.setVisibility(View.GONE);
+            grid.setOnItemClickListener(null);
+            goOutFlag = true;
+            timer.myCancel();
+            //Проверяем правильность вспомненных фото
+            boolean correct = true;
+            boolean filledAllCells = true;
+            for (int i = 0; i < grid.getAdapter().getCount(); ++i){
+                int rid = (int)((MyAdapter)grid.getAdapter()).getItem(i);
+                if(rid == R.drawable.question_mark){ //одна из ячеек не заполнена
+                    filledAllCells = false;
+                }
+                if(!customSet.contains(rid) && rid != R.drawable.question_mark){ //одна из неверных картинок
+                    //Помечаем неверное фото крестиком
+                    ImageView imageView = (ImageView) grid.getChildAt(i);
+                    mixGridCellWithDrawable(this, grid, i, imageView, R.drawable.incorrect );
+                    correct = false;
+                }
+            }
+            String resultTitle;
+            String resultMessage;
+            if(correct && filledAllCells) {//задание выполнено успешно
+                startPlaying(RememberActivity.this, R.raw.success);
+                resultTitle = "Поздравляем! Задание выполнено успешно!";
+                resultMessage = "Время выполнения = " + timer_tv.getText();
+            }
+            else {//задание не выполнено
+                startPlaying(RememberActivity.this, R.raw.unsuccess);
+                resultTitle = "Задание НЕ выполнено!";
+                if(!correct && !filledAllCells) {//не все фото правильно отгаданы и есть незаполненные ячейки
+                    resultMessage = "Не все фото правильные и есть незаполненные ячейки.";
+                }
+                else if(correct) {//вставленные фото правильные, но есть незаполненные ячейки
+                    resultMessage = "Не все фото отгаданы.";
+                }
+                else {//не все фото правильно отгаданы
+                    resultMessage = "Некоторые фото неверные.";
+                }
+            }
+            DlgWithOneButton myDialogFragment = new DlgWithOneButton(resultTitle, resultMessage, "OK");
+            myDialogFragment.show(getSupportFragmentManager(), "myDialog");
+        }
+        else { // dlg2Kind == 2
+            goOutFlag = true;
+            timer.myCancel();
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+        }
     }
 
     @Override
@@ -291,16 +394,9 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
     }
 
     public void call_exit_dlg() {
+        dlg2Kind = 2;
         DlgWithTwoButtons myDialogFragment = new DlgWithTwoButtons(getString(R.string.exitGameActivity), getString(R.string.areYouSure),
             getString(R.string.yes_option), getString(R.string.no_option), this);
         myDialogFragment.show(getSupportFragmentManager(), "myDialog");
     }
-
-//    private void clearContent()
-//    {
-//        grid.setVisibility(View.GONE);
-//        rememberActivityAim_tv.setVisibility(View.GONE);
-//        timer_tv.setVisibility(View.GONE);
-//    }
-
 }

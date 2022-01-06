@@ -315,7 +315,7 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
         long h = s0 / 3600;
         long m = s0 % 3600 / 60;
         long s = s0 % 60;
-        String time = String.format("%03d:%02d", m, s);
+        String time = String.format("%02d:%02d", m, s);
         timer_tv.setText(time);
     }
 

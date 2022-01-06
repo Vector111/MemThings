@@ -5,17 +5,25 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.media.MediaPlayer;
 import android.util.Pair;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.GridView;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.content.Context;
 import android.media.MediaPlayer;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -176,6 +184,15 @@ class MyConvertions {
         }
         return ret;
     }
+
+    public static HashMap<String, Integer> genStringIntegerMap(ArrayList<String> alS, ArrayList<Integer> alI){
+        HashMap<String, Integer> ret = new HashMap<>();
+        for (int i = 0; i < alS.size(); ++i)
+            ret.put(alS.get(i), alI.get(i));
+
+        return ret;
+    }
+
 }
 
 class MyRandoms {
@@ -263,5 +280,32 @@ class MyKeyBoard {
             view = new View(activity);
         }
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+}
+
+class MyToasts {
+    public static void myToastShow(Activity activity, String text, int gravity, int duration) {
+        LayoutInflater inflater = activity.getLayoutInflater();
+        View layout = inflater.inflate(R.layout.custom_toast_layout,
+            (ViewGroup) activity.findViewById(R.id.toast_layout_root));
+        TextView custom_toast_text = (TextView) layout.findViewById(R.id.custom_toast_text);
+        custom_toast_text.setText(text);
+        Toast toast = new Toast(activity.getApplicationContext());
+        toast.setGravity(gravity, 0, 0);
+        toast.setDuration(duration);
+        toast.setView(layout);
+        toast.show();
+    }
+}
+
+class MyGrids {
+    public static void mixGridCellWithDrawable(Context context, GridView grid, int pos, ImageView imageView, int rDrawableId) {
+        int rId = (int) grid.getAdapter().getItem(pos);
+        Resources r = context.getResources();
+        Drawable[] layers = new Drawable[2];
+        layers[0] = r.getDrawable(rId);
+        layers[1] = r.getDrawable(rDrawableId);
+        LayerDrawable layerDrawable = new LayerDrawable(layers);
+        imageView.setImageDrawable(layerDrawable);
     }
 }

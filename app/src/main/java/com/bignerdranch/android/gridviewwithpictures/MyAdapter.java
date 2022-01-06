@@ -28,15 +28,11 @@ public class MyAdapter extends BaseAdapter {
         mThumbIds = new ArrayList<>();
     }
 
-    public int getCount()
-    {
-        return mThumbIds.size();
-    }
+    public int getCount() { return mThumbIds.size(); }
 
-    public Object getItem(int position)
-    {
-        return mThumbIds.get(position);
-    }
+    public Object getItem(int position) { return mThumbIds.get(position); }
+
+    public void setItem(int position, int rid) { mThumbIds.set(position, rid); }
 
     public long getItemId(int position)
     {
