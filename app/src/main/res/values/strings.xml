@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GridViewWithPictures</string>
+    <string name="app_name">MemThings</string>
     <string name="attempt_correct">Правильно! Попытка=%1$d в игре [%2$s]</string>
     <string name="attempt_incorrect">Не верно!"\n"Результаты игры [%1$s] обнуляются!</string>
     <string name="all_attempts_correct">Сеанс [%1$s] завершен!"\n"За %2$d попытки"\n"потрачено (в среднем) %3$d сек</string>
@@ -29,6 +29,8 @@
     <string name="second_fragment_label">Second Fragment</string>
     <string name="forward">Далее</string>
     <string name="ready">Готово</string>
+    <string name="source">=>Перейти к источнику</string>
+    <string name="solution">=>Перейти к решению</string>
     <string name="previous">Previous</string>
     <string name="memorizeActivityAim">Запоминаем ...</string>
     <string name="rememberActivityAim">Вспоминаем ...</string>
@@ -38,5 +40,6 @@
 
     <string name="auto_complete_text_view_hint">Введите название фото..."</string>
     <string name="warning_for_clear_cell">Для очистки ячейки нажмите на нее</string>
+    <string name="speak_pls">Говорите...</string>
 
 </resources>

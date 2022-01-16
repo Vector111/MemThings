@@ -2,7 +2,6 @@ package com.bignerdranch.android.gridviewwithpictures;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.constraintlayout.widget.ConstraintSet;
 
 import android.content.Context;
 import android.content.Intent;
@@ -10,41 +9,36 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.util.Pair;
+import android.speech.RecognitionListener;
+import android.speech.SpeechRecognizer;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import static com.bignerdranch.android.gridviewwithpictures.MyFiles.*;
 import static com.bignerdranch.android.gridviewwithpictures.MyConvertions.*;
 import static com.bignerdranch.android.gridviewwithpictures.MyGrids.*;
 import static com.bignerdranch.android.gridviewwithpictures.MyToasts.*;
-import static com.bignerdranch.android.gridviewwithpictures.Sounds.*;
 import static com.bignerdranch.android.gridviewwithpictures.MyKeyBoard.*;
 import static com.bignerdranch.android.gridviewwithpictures.MySettings.getRowsNum;
 import static com.bignerdranch.android.gridviewwithpictures.MySettings.getThingNum;
-import static com.bignerdranch.android.gridviewwithpictures.Sounds.mediaPlayer;
 import static com.bignerdranch.android.gridviewwithpictures.Sounds.startPlaying;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public class RememberActivity extends AppCompatActivity implements DoForPositive1 {
     private static final String EXTRA_ALS =
@@ -54,15 +48,20 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
     private static final String EXTRA_CUSTOM_ARR =
         "com.bignerdranch.android.gridviewwithpictures.customArr";
 
+    private static final String TAG = "MyTag";
+
+
     public ConstraintLayout mainLayout;
     public ConstraintLayout upSubLayout;
     private AutoCompleteTextView autoCompleteTextView;
+    private TextView speek_tv;
     private TextView warningTextView;
     public GridView grid;
     private TextView rememberActivityAim_tv;
     private int nThings; //число картинок для запоминания
     private int rowsNum; //число строк grid
     private int columnsNum; //число столбцов grid
+    private int cellDim; //ширина стороны квадрата ячейки
     private MyAdapter adapter;
     private TextView timer_tv;
     private Button ready_btn;
@@ -80,9 +79,18 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
     private ArrayList<String> alS;  // Названия фотографий
     private ArrayList<Integer> alI; // Resource IDS файлов фотографий (IDS могут повторяться)
     private HashMap<String, Integer> map; //словарь для поиска ресурсных id по названиям фото
+    private ArrayList<Integer> customArr;// выборка запоминаемых юзером ресурных id картинок
     private HashSet<Integer> customSet; // будет хранить множество ресурных id картинок, которые запоминал юзер
 
     private int dlg2Kind;
+    // число нажатий кнопки ready_btn : если readyBtnPressTimes >= 1 ==>
+    // текст кнопки будет переключаться между "Источник" и "Результат"
+    private int readyBtnPressTimes = 0;
+    private ArrayList<ImageView> imageViewArrayList;
+    private ImageButton voiceInput_ib;
+    private static int voiceInputIbState = 1;
+
+    private SpeechRecognizer sr;
 
     public static Intent newIntent(Context context, ArrayList<String> alS,
         ArrayList<Integer> alI, ArrayList<Integer> customArr)
@@ -106,8 +114,8 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         //Создаем словарь для поиска ресурсных id по названиям фото
         map = genStringIntegerMap(alS, alI);
 
-        // customArr - выборка запоминаемых юзером ресурных id картинок
-        ArrayList<Integer> customArr = getIntent().getIntegerArrayListExtra(EXTRA_CUSTOM_ARR);
+
+        customArr = getIntent().getIntegerArrayListExtra(EXTRA_CUSTOM_ARR);
         customSet = (HashSet<Integer>) convertListToSet(customArr);
 
         Settings settings = new Settings(this);
@@ -124,20 +132,53 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         grid = (GridView) findViewById(R.id.seek_grid);
         timer_tv = (TextView) findViewById(R.id.timer_tv1);
 
+
+
         ready_btn = (Button) findViewById(R.id.ready_btn);
+        ready_btn.setText(R.string.ready);
+
         ready_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 dlg2Kind = 1;
-                DlgWithTwoButtons myDialogFragment = new DlgWithTwoButtons("Уверены, что все вспомнили?", "",
-                    getString(R.string.yes_option), getString(R.string.cancel_option), RememberActivity.this);
-                myDialogFragment.show(getSupportFragmentManager(), "myDialog");
+                if(readyBtnPressTimes == 0) {
+                    DlgWithTwoButtons myDialogFragment = new DlgWithTwoButtons("Уверены, что все вспомнили?", "",
+                        getString(R.string.yes_option), getString(R.string.cancel_option), RememberActivity.this);
+                    myDialogFragment.show(getSupportFragmentManager(), "myDialog");
+                }
+                else
+                    fDo();
 
-                timer.myCancel();
+            }
+        });
+        speek_tv = (TextView) findViewById(R.id.speek_tv);
+        voiceInput_ib = (ImageButton) findViewById(R.id.voiceInput_ib);
+        voiceInput_ib.setImageResource(R.drawable.microphone_normal);
+        voiceInput_ib.setBackgroundResource(R.drawable.bg_microphone_normal);
+        voiceInput_ib.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(voiceInputIbState == 1){
+                    voiceInput_ib.setImageResource(R.drawable.pause);
+                    voiceInput_ib.setBackgroundResource(R.drawable.bg_pause);
+                    speek_tv.setText(R.string.speak_pls);
+                    speek_tv.setBackgroundResource(R.drawable.golden_rod_shape);
+
+                }
+                else{
+                    voiceInput_ib.setImageResource(R.drawable.microphone_normal);
+                    voiceInput_ib.setBackgroundResource(R.drawable.bg_microphone_normal);
+                    speek_tv.setText("");
+                }
+                voiceInputIbState *= (-1);
             }
         });
 
+
         suspendedShow();
+
+        sr = SpeechRecognizer.createSpeechRecognizer(this);
+        sr.setRecognitionListener(new listener());
     }
 
     private void suspendedShow() {
@@ -170,7 +211,7 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
                 int gridH = maxGridHeight - grid.getPaddingTop() - grid.getPaddingBottom();
                 int cellH = (gridH - (rowsNum - 1) * grid.getVerticalSpacing()) / rowsNum;
 
-                int cellDim = Math.min(cellW, cellH);
+                cellDim = Math.min(cellW, cellH);
                 gridW = cellDim * columnsNum + (columnsNum - 1) * grid.getHorizontalSpacing();
                 gridH = cellDim * rowsNum + (rowsNum - 1) * grid.getVerticalSpacing();
 
@@ -184,9 +225,8 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
 
                 grid.setColumnWidth(cellDim);
 
-                adapter = new MyAdapter(RememberActivity.this, cellDim);
+                adapter = new MyAdapter(RememberActivity.this, cellDim, 1);
 
-                //ToDo: подготовить иконки со знаком вопроса "?"
                 ArrayList<Integer> adapterArray = new ArrayList<>();
                 for (int i = 0; i < nThings; ++i){
                     adapterArray.add(R.drawable.question_mark);
@@ -252,6 +292,56 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
                 timerStart();
             }
         });
+    }
+
+    class listener implements RecognitionListener
+    {
+        public void onReadyForSpeech(Bundle params)
+        {
+            Log.d(TAG, "onReadyForSpeech");
+        }
+        public void onBeginningOfSpeech()
+        {
+            Log.d(TAG, "onBeginningOfSpeech");
+        }
+        public void onRmsChanged(float rmsdB)
+        {
+            Log.d(TAG, "onRmsChanged");
+        }
+        public void onBufferReceived(byte[] buffer)
+        {
+            Log.d(TAG, "onBufferReceived");
+        }
+        public void onEndOfSpeech()
+        {
+            Log.d(TAG, "onEndofSpeech");
+        }
+        public void onError(int error)
+        {
+            Log.d(TAG,  "error " +  error);
+//            mText.setText("error " + error);
+        }
+        public void onResults(Bundle results)
+        {
+            String str = new String();
+            Log.d(TAG, "onResults " + results);
+            ArrayList data = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+            for (int i = 0; i < data.size(); i++)
+            {
+                Log.d(TAG, "result " + data.get(i));
+                str += data.get(i);
+            }
+//            mText.setText("results: "+String.valueOf(data.size()));
+//            words.setText(str);
+        }
+        public void onPartialResults(Bundle partialResults)
+        {
+            Log.d(TAG, "onPartialResults");
+        }
+        public void onEvent(int eventType, Bundle params)
+        {
+            Log.d(TAG, "onEvent " + eventType);
+        }
     }
 
     private void timerStart() {
@@ -323,53 +413,80 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         ((MyAdapter)grid.getAdapter()).setItem(position, rid);
     }
 
+    //Копируем ячейки (ImageView) grid в список
+    private ArrayList<ImageView> copyGridImageViewCellsToList(GridView grid)
+    {
+        ArrayList<ImageView> ret = new ArrayList<>();
+        for (int i = 0; i < grid.getAdapter().getCount(); ++i) {
+            ImageView imageView = (ImageView) (ImageView)grid.getChildAt(i);
+            ret.add(imageView);
+        }
+        return ret;
+    }
+
     public void fDo () {
         if(dlg2Kind == 1) {
-            autoCompleteTextView.setVisibility(View.GONE);
-            ready_btn.setVisibility(View.GONE);
-            warningTextView.setVisibility(View.GONE);
-            rememberActivityAim_tv.setVisibility(View.GONE);
-            ready_btn.setVisibility(View.GONE);
-            grid.setOnItemClickListener(null);
-            goOutFlag = true;
-            timer.myCancel();
-            //Проверяем правильность вспомненных фото
-            boolean correct = true;
-            boolean filledAllCells = true;
-            for (int i = 0; i < grid.getAdapter().getCount(); ++i){
-                int rid = (int)((MyAdapter)grid.getAdapter()).getItem(i);
-                if(rid == R.drawable.question_mark){ //одна из ячеек не заполнена
-                    filledAllCells = false;
+            ++readyBtnPressTimes;
+            if(readyBtnPressTimes == 1) {
+                ready_btn.setText(R.string.source);
+                goOutFlag = true;
+                timer.myCancel();
+                autoCompleteTextView.setVisibility(View.GONE);
+//                ready_btn.setVisibility(View.GONE);
+                warningTextView.setVisibility(View.GONE);
+                rememberActivityAim_tv.setVisibility(View.GONE);
+                grid.setOnItemClickListener(null);
+                //Проверяем правильность вспомненных фото
+                boolean correct = true;
+                boolean filledAllCells = true;
+                for (int i = 0; i < grid.getAdapter().getCount(); ++i) {
+                    int rid = (int) ((MyAdapter) grid.getAdapter()).getItem(i);
+                    if (rid == R.drawable.question_mark) { //одна из ячеек не заполнена
+                        filledAllCells = false;
+                    }
+                    if (!customSet.contains(rid) && rid != R.drawable.question_mark) { //одна из неверных картинок
+                        //Помечаем неверное фото крестиком
+                        ImageView imageView = (ImageView) grid.getChildAt(i);
+                        mixGridCellWithDrawable(this, grid, i, imageView, R.drawable.incorrect);
+                        correct = false;
+                    }
                 }
-                if(!customSet.contains(rid) && rid != R.drawable.question_mark){ //одна из неверных картинок
-                    //Помечаем неверное фото крестиком
-                    ImageView imageView = (ImageView) grid.getChildAt(i);
-                    mixGridCellWithDrawable(this, grid, i, imageView, R.drawable.incorrect );
-                    correct = false;
+
+                //Копируем ячейки (ImageView) grid в список
+                imageViewArrayList = copyGridImageViewCellsToList(grid);
+
+                String resultTitle;
+                String resultMessage;
+                if (correct && filledAllCells) {//задание выполнено успешно
+                    startPlaying(RememberActivity.this, R.raw.success);
+                    resultTitle = "Поздравляем! Задание выполнено успешно!";
+                    resultMessage = "Время выполнения = " + timer_tv.getText();
+                } else {//задание не выполнено
+                    startPlaying(RememberActivity.this, R.raw.unsuccess);
+                    resultTitle = "Задание НЕ выполнено!";
+                    if (!correct && !filledAllCells) {//не все фото правильно отгаданы и есть незаполненные ячейки
+                        resultMessage = "Не все фото правильные и есть незаполненные ячейки.";
+                    } else if (correct) {//вставленные фото правильные, но есть незаполненные ячейки
+                        resultMessage = "Не все фото отгаданы.";
+                    } else {//не все фото правильно отгаданы
+                        resultMessage = "Некоторые фото неверные.";
+                    }
                 }
+                DlgWithOneButton myDialogFragment = new DlgWithOneButton(resultTitle, resultMessage, "OK");
+                myDialogFragment.show(getSupportFragmentManager(), "myDialog");
             }
-            String resultTitle;
-            String resultMessage;
-            if(correct && filledAllCells) {//задание выполнено успешно
-                startPlaying(RememberActivity.this, R.raw.success);
-                resultTitle = "Поздравляем! Задание выполнено успешно!";
-                resultMessage = "Время выполнения = " + timer_tv.getText();
+            else { //readyBtnPressTimes > 1
+                if (readyBtnPressTimes % 2 == 0) {
+                    ready_btn.setText(R.string.solution);
+                    adapter = new MyAdapter(RememberActivity.this, cellDim, 1);
+                    adapter.LoadArr(customArr);
+                } else {
+                    ready_btn.setText(R.string.source);
+                    adapter = new MyAdapter(RememberActivity.this, cellDim, 2);
+                    adapter.LoadImageViewArr(imageViewArrayList);
+                }
+                grid.setAdapter(adapter);
             }
-            else {//задание не выполнено
-                startPlaying(RememberActivity.this, R.raw.unsuccess);
-                resultTitle = "Задание НЕ выполнено!";
-                if(!correct && !filledAllCells) {//не все фото правильно отгаданы и есть незаполненные ячейки
-                    resultMessage = "Не все фото правильные и есть незаполненные ячейки.";
-                }
-                else if(correct) {//вставленные фото правильные, но есть незаполненные ячейки
-                    resultMessage = "Не все фото отгаданы.";
-                }
-                else {//не все фото правильно отгаданы
-                    resultMessage = "Некоторые фото неверные.";
-                }
-            }
-            DlgWithOneButton myDialogFragment = new DlgWithOneButton(resultTitle, resultMessage, "OK");
-            myDialogFragment.show(getSupportFragmentManager(), "myDialog");
         }
         else { // dlg2Kind == 2
             goOutFlag = true;

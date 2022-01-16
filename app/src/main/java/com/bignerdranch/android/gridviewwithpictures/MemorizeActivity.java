@@ -220,7 +220,7 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
 
                 grid.setColumnWidth(cellDim);
 
-                adapter = new MyAdapter(MemorizeActivity.this, cellDim);
+                adapter = new MyAdapter(MemorizeActivity.this, cellDim, 1);
 
                 // Генерируем customArr
                 formCustomArr();

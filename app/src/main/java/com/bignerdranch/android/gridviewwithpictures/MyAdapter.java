@@ -21,16 +21,21 @@ public class MyAdapter extends BaseAdapter {
     private Context mContext;
     private int cell_w;     // ширина ячейки
     private List<Integer> mThumbIds;
+    private List<ImageView> mImageViewList;
+    private int adapterType;
 
-    public MyAdapter(Context c, int cell_w) {
+    public MyAdapter(Context c, int cell_w, int adapterType) {
         mContext = c;
         this.cell_w = cell_w;
         mThumbIds = new ArrayList<>();
+        mImageViewList = new ArrayList<>();
+        this.adapterType = adapterType;
     }
 
-    public int getCount() { return mThumbIds.size(); }
+    public int getCount() { return (adapterType == 1) ? mThumbIds.size() : mImageViewList.size(); }
 
-    public Object getItem(int position) { return mThumbIds.get(position); }
+    public Object getItem(int position) { return (adapterType == 1) ? mThumbIds.get(position) :
+        mImageViewList.get(position); }
 
     public void setItem(int position, int rid) { mThumbIds.set(position, rid); }
 
@@ -50,8 +55,17 @@ public class MyAdapter extends BaseAdapter {
             imageView = (ImageView) convertView;
         }
 
-        imageView.setImageResource(mThumbIds.get(position));
+        if(adapterType == 1)
+            imageView.setImageResource(mThumbIds.get(position));
+        else {//adapterType == 2
+            imageView = mImageViewList.get(position);
+        }
+
         return imageView;
+    }
+
+    public void LoadImageViewArr(List<ImageView> list) {
+        mImageViewList = new ArrayList<>(list);
     }
 
     public void LoadArr(List<Integer> list) {
