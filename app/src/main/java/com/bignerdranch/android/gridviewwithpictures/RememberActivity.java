@@ -7,9 +7,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.speech.RecognitionListener;
+import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
 import android.util.TypedValue;
@@ -39,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 
 public class RememberActivity extends AppCompatActivity implements DoForPositive1 {
     private static final String EXTRA_ALS =
@@ -91,6 +95,11 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
     private static int voiceInputIbState = 1;
 
     private SpeechRecognizer sr;
+    private boolean bBreakSpeechListening;
+
+    private AudioManager mAudioManager;
+    private int mStreamVolume = 0;
+    private Handler mHandler = new Handler();
 
     public static Intent newIntent(Context context, ArrayList<String> alS,
         ArrayList<Integer> alI, ArrayList<Integer> customArr)
@@ -132,11 +141,13 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         grid = (GridView) findViewById(R.id.seek_grid);
         timer_tv = (TextView) findViewById(R.id.timer_tv1);
 
+        bBreakSpeechListening = false;
 
+        sr = SpeechRecognizer.createSpeechRecognizer(this);
+        sr.setRecognitionListener(new listener());
 
         ready_btn = (Button) findViewById(R.id.ready_btn);
         ready_btn.setText(R.string.ready);
-
         ready_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -151,34 +162,77 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
 
             }
         });
+
         speek_tv = (TextView) findViewById(R.id.speek_tv);
         voiceInput_ib = (ImageButton) findViewById(R.id.voiceInput_ib);
         voiceInput_ib.setImageResource(R.drawable.microphone_normal);
         voiceInput_ib.setBackgroundResource(R.drawable.bg_microphone_normal);
+
+        mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        mStreamVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC); // getting system volume into var for later un-muting
+
+        if(voiceInput_ib.isEnabled()){
+            voiceInputIbToPressedState();
+            voiceInputIbState *= (-1);
+
+            startListening();
+        }
+
         voiceInput_ib.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(voiceInputIbState == 1){
-                    voiceInput_ib.setImageResource(R.drawable.pause);
-                    voiceInput_ib.setBackgroundResource(R.drawable.bg_pause);
-                    speek_tv.setText(R.string.speak_pls);
-                    speek_tv.setBackgroundResource(R.drawable.golden_rod_shape);
+                if(voiceInputIbState == 1) {
+                    voiceInputIbToPressedState();
+                    bBreakSpeechListening = false;
+                    startListening();
+                }
+                else {
+                    voiceInputIbToNormalState();
+                    bBreakSpeechListening = true;
+                    sr.stopListening();
+                    startAudioSound();
+                }
 
-                }
-                else{
-                    voiceInput_ib.setImageResource(R.drawable.microphone_normal);
-                    voiceInput_ib.setBackgroundResource(R.drawable.bg_microphone_normal);
-                    speek_tv.setText("");
-                }
                 voiceInputIbState *= (-1);
             }
         });
 
-
         suspendedShow();
+    }
 
-        sr = SpeechRecognizer.createSpeechRecognizer(this);
-        sr.setRecognitionListener(new listener());
+    private void startListening()
+    {
+        mAudioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, 0, 0); // setting system volume to zero, muting
+
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
+        intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,"com.bignerdranch.android.gridviewwithpictures");
+
+        String languagePref = "ru_RU";
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, languagePref);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, languagePref);
+        intent.putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE, languagePref);
+
+        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,3);
+        intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS,500);
+        intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS,500);
+        sr.startListening(intent);
+        Log.i("111111","11111111");
+    }
+
+    private void voiceInputIbToPressedState()
+    {
+        voiceInput_ib.setImageResource(R.drawable.pause);
+        voiceInput_ib.setBackgroundResource(R.drawable.bg_pause);
+        speek_tv.setText(R.string.speak_pls);
+        speek_tv.setBackgroundResource(R.drawable.golden_rod_shape);
+    }
+
+    private void voiceInputIbToNormalState()
+    {
+        voiceInput_ib.setImageResource(R.drawable.microphone_normal);
+        voiceInput_ib.setBackgroundResource(R.drawable.bg_microphone_normal);
+        speek_tv.setText("");
     }
 
     private void suspendedShow() {
@@ -259,29 +313,7 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
                     {
                         hideKeyboard(RememberActivity.this);
 
-                        //Пытаемся вставить фото в соответствии с его названием
-                        int rid = map.get(autoCompleteTextView.getText().toString()); //id фото в соответствии с названием
-                        //Определяем позицию для вставки (попутно проверяя, не вставлен ли в grid уже такой же rid)
-                        int insertPos = -2; //позиция для вставки
-                        for (int i = 0; i < grid.getAdapter().getCount(); ++i){
-                            int rid1 = (int)((MyAdapter)grid.getAdapter()).getItem(i);
-                            if(rid1 == rid){
-                                insertPos = -1;
-                                break;
-                            }
-                            if (rid1 == R.drawable.question_mark){
-                                insertPos = i;
-                                break;
-                            }
-                        }
-                        if(insertPos < 0) { //проблемы
-                            startPlaying(RememberActivity.this, R.raw.user_error);
-                            String toastStr = (insertPos == -1) ? "Такое фото вы уже вставили!" :
-                                "Таблица уже заполнена! Либо Удалите неверный вариант, либо нажите кнопку [Готово]";
-                            myToastShow(RememberActivity.this, toastStr, Gravity.CENTER, Toast.LENGTH_SHORT );
-                        }
-                        else //нашлась доступная свободная ячейка
-                            setViewToGridCell(grid, insertPos, rid);
+                        attemptToInsertPhoto(autoCompleteTextView.getText().toString());
 
                         autoCompleteTextView.setText("");
                     }
@@ -294,54 +326,142 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         });
     }
 
+    private void attemptToInsertPhoto(String photoName)
+    {
+        //Пытаемся вставить фото в соответствии с его названием
+        photoName = photoName.toLowerCase();
+        if(!map.containsKey(photoName))
+            return;
+        int rid = map.get(photoName); //id фото в соответствии с названием
+        //Определяем позицию для вставки (попутно проверяя, не вставлен ли в grid уже такой же rid)
+        int insertPos = -2; //позиция для вставки
+        for (int i = 0; i < grid.getAdapter().getCount(); ++i){
+            int rid1 = (int)((MyAdapter)grid.getAdapter()).getItem(i);
+            if(rid1 == rid){
+                insertPos = -1;
+                break;
+            }
+            if (rid1 == R.drawable.question_mark){
+                insertPos = i;
+                break;
+            }
+        }
+        if(insertPos < 0) { //проблемы
+            startPlaying(RememberActivity.this, R.raw.user_error);
+            String toastStr = (insertPos == -1) ? "Такое фото вы уже вставили!" :
+                "Таблица уже заполнена! Либо Удалите неверный вариант, либо нажите кнопку [Готово]";
+            myToastShow(RememberActivity.this, toastStr, Gravity.CENTER, Toast.LENGTH_SHORT );
+        }
+        else //нашлась доступная свободная ячейка
+            setViewToGridCell(grid, insertPos, rid);
+    }
+
     class listener implements RecognitionListener
     {
         public void onReadyForSpeech(Bundle params)
         {
             Log.d(TAG, "onReadyForSpeech");
+            if(!bBreakSpeechListening) {
+                speek_tv.setText(R.string.speak_pls);
+            }
+//            startAudioSound();
         }
+
         public void onBeginningOfSpeech()
         {
             Log.d(TAG, "onBeginningOfSpeech");
         }
+
         public void onRmsChanged(float rmsdB)
         {
             Log.d(TAG, "onRmsChanged");
         }
+
         public void onBufferReceived(byte[] buffer)
         {
             Log.d(TAG, "onBufferReceived");
         }
+
         public void onEndOfSpeech()
         {
             Log.d(TAG, "onEndofSpeech");
+            if(!bBreakSpeechListening){
+                speek_tv.setText("");
+            }
         }
+
         public void onError(int error)
         {
             Log.d(TAG,  "error " +  error);
-//            mText.setText("error " + error);
+
+            if(!bBreakSpeechListening){
+                String errS;
+                if(error == 2) {
+                    errS = "Подключите Интернет!";
+                    voiceInputIbToNormalState();
+                    voiceInputIbState *= (-1);
+                    bBreakSpeechListening = true;
+                    sr.stopListening();
+                    speek_tv.setText(errS);
+//                    startAudioSound();
+                    return;
+                }
+                else if(error == 7) {
+                    errS = "Говорите четче!";
+                }
+                else {
+                    errS = "Проблемы речевого ввода";
+                }
+                speek_tv.setText(errS);
+    //            Toast.makeText(RememberActivity.this, errS, Toast.LENGTH_SHORT).show();//toDo
+                startListening();
+            }
+//            startAudioSound();
         }
+
         public void onResults(Bundle results)
         {
-            String str = new String();
             Log.d(TAG, "onResults " + results);
-            ArrayList data = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-            for (int i = 0; i < data.size(); i++)
-            {
-                Log.d(TAG, "result " + data.get(i));
-                str += data.get(i);
+
+            if(!bBreakSpeechListening) {
+                ArrayList<String> data = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                for (int i = 0; i < data.size(); ++i) {
+                    Log.d(TAG, "result " + data.get(i));
+                    String strResult = data.get(i);
+                    strResult = strResult.trim();
+                    String[] words = strResult.split("\\s+");
+
+                    //Сначала проверим совпадение по отдельным словам
+                    for (int j = 0; j < words.length; ++j) {
+                        String word = words[j];
+                        attemptToInsertPhoto(word);
+                    }
+                    //Теперь проверим совпадение имени фото по двум подряд идущим через пробел словам
+                    for (int j = 0; j < (words.length - 1); ++j) {
+                        String photoName = words[j] + " " + words[j + 1];
+                        attemptToInsertPhoto(photoName);
+                    }
+                }
+                startListening();
             }
-//            mText.setText("results: "+String.valueOf(data.size()));
-//            words.setText(str);
+//            startAudioSound();
         }
+
         public void onPartialResults(Bundle partialResults)
         {
             Log.d(TAG, "onPartialResults");
         }
+
         public void onEvent(int eventType, Bundle params)
         {
             Log.d(TAG, "onEvent " + eventType);
         }
+    }
+
+    private void startAudioSound() {
+        mHandler.postDelayed(() -> {
+            mAudioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, mStreamVolume, 0); // again setting the system volume back to the original, un-mutting
+        }, 300);
     }
 
     private void timerStart() {
@@ -428,6 +548,12 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         if(dlg2Kind == 1) {
             ++readyBtnPressTimes;
             if(readyBtnPressTimes == 1) {
+                voiceInput_ib.setVisibility(View.GONE);
+                speek_tv.setVisibility(View.GONE);
+                bBreakSpeechListening = true;
+                sr.stopListening();
+                startAudioSound();
+
                 ready_btn.setText(R.string.source);
                 goOutFlag = true;
                 timer.myCancel();
@@ -491,6 +617,11 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         else { // dlg2Kind == 2
             goOutFlag = true;
             timer.myCancel();
+
+            bBreakSpeechListening = true;
+            sr.stopListening();
+            startAudioSound();
+
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
         }

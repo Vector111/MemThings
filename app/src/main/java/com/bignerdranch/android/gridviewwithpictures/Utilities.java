@@ -242,7 +242,6 @@ class MyFiles {
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
                 String[] tmp = line.split(";");
-//                String[] tmp = line.split("\\s+");
                 if (tmp.length != 2)
                     continue;
                 String s1 = tmp[0];

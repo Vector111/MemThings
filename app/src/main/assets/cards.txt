@@ -61,7 +61,7 @@
 лось;				elk
 лошадь;				horse
 лягушка;			frog
-медведь;			bear	
+медведь;			bear
 медуза;				jellyfish
 морская звезда;		starfish
 муравей;			ant
@@ -92,7 +92,7 @@
 пуффин;				puffin
 пчела;				bee
 рыба-лев;			lionfish
-свинья;				pigeon
+свинья;				pig
 скат;				cramp_fish
 скорпион;			scorpion
 слон;				elephant
