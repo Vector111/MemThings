@@ -169,7 +169,7 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         voiceInput_ib.setBackgroundResource(R.drawable.bg_microphone_normal);
 
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        mStreamVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC); // getting system volume into var for later un-muting
+        mStreamVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION); // getting system volume into var for later un-muting
 
         if(voiceInput_ib.isEnabled()){
             voiceInputIbToPressedState();
