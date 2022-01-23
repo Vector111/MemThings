@@ -48,8 +48,8 @@ public class MainActivity extends AppCompatActivity implements DoForPositive1 {
                 goToMemorizeActivity();
             }
         });
-
     }
+
     @Override
     public void onResume() {
         super.onResume();

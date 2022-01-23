@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 public class RememberActivity extends AppCompatActivity implements DoForPositive1 {
     private static final String EXTRA_ALS =
@@ -214,8 +215,8 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         intent.putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE, languagePref);
 
         intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,3);
-        intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS,500);
-        intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS,500);
+//        intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS,500);
+//        intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS,500);
         sr.startListening(intent);
         Log.i("111111","11111111");
     }
@@ -356,6 +357,37 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
             setViewToGridCell(grid, insertPos, rid);
     }
 
+    //Определение максимального кол-ва слов по всем вариантам
+    private int getMaxWords(ArrayList<String> data)
+    {
+        int retMax = 0;
+        for (int i = 0; i < data.size(); ++i) {
+            String strResult = data.get(i);
+            strResult = strResult.trim();
+            String[] words = strResult.split("\\s+");
+            if(retMax > words.length)
+                retMax = words.length;
+        }
+        return retMax;
+    }
+
+    //Заполним кастомный двумерный массива (учитывая maxWords),
+    //вставляя при надобности в конец String типа "?"
+    private String [][] fillTwodimCustomArr(ArrayList<String> data, int twoSz)
+    {
+        String ret[][] = new String[data.size()][twoSz];
+        for (int i = 0; i < data.size(); ++i) {
+            String strResult = data.get(i);
+            strResult = strResult.trim();
+            String[] words = strResult.split("\\s+");
+            //Убираем конечные пробелы отдельных слов
+            for (int j = 0; j < twoSz; ++j) {
+                ret[i][j] = (j < words.length) ? words[j].trim() : "?";
+            }
+        }
+        return ret;
+    }
+
     class listener implements RecognitionListener
     {
         public void onReadyForSpeech(Bundle params)
@@ -425,6 +457,16 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
 
             if(!bBreakSpeechListening) {
                 ArrayList<String> data = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+/*
+                //Создадим Set<String> названий
+                Set<String> set = new HashSet<>();
+*/
+                //Определим максимальное кол-во слов по всем вариантам
+                int maxWords = getMaxWords(data);
+                //Заполним кастомный двумерный массива (учитывая maxWords),
+                //вставляя при надобности в конец String типа "?"
+                String arr[][] = fillTwodimCustomArr(data, maxWords);
+
                 for (int i = 0; i < data.size(); ++i) {
                     Log.d(TAG, "result " + data.get(i));
                     String strResult = data.get(i);
