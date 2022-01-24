@@ -365,25 +365,26 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
             String strResult = data.get(i);
             strResult = strResult.trim();
             String[] words = strResult.split("\\s+");
-            if(retMax > words.length)
+            if(retMax < words.length)
                 retMax = words.length;
         }
         return retMax;
     }
 
-    //Заполним кастомный двумерный массива (учитывая maxWords),
-    //вставляя при надобности в конец String типа "?"
-    private String [][] fillTwodimCustomArr(ArrayList<String> data, int twoSz)
+    //Заполним ArrayList<Arraylist<String>> (учитывая maxWords),
+    //вставляя при надобности в конец каждой строки "?"
+    private ArrayList<ArrayList<String>> fill2DimArrayList(ArrayList<String> data, int twoSz)
     {
-        String ret[][] = new String[data.size()][twoSz];
+        ArrayList<ArrayList<String>> ret = new ArrayList<>();
         for (int i = 0; i < data.size(); ++i) {
             String strResult = data.get(i);
             strResult = strResult.trim();
             String[] words = strResult.split("\\s+");
-            //Убираем конечные пробелы отдельных слов
+            ArrayList<String> row = new ArrayList<>();
             for (int j = 0; j < twoSz; ++j) {
-                ret[i][j] = (j < words.length) ? words[j].trim() : "?";
+                row.add((j < words.length) ? words[j].trim().toLowerCase() : "?");
             }
+            ret.add(row);
         }
         return ret;
     }
@@ -451,42 +452,60 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
 //            startAudioSound();
         }
 
-        public void onResults(Bundle results)
-        {
+        public void onResults(Bundle results) {
             Log.d(TAG, "onResults " + results);
 
-            if(!bBreakSpeechListening) {
+            if (!bBreakSpeechListening) {
                 ArrayList<String> data = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-/*
-                //Создадим Set<String> названий
-                Set<String> set = new HashSet<>();
-*/
                 //Определим максимальное кол-во слов по всем вариантам
                 int maxWords = getMaxWords(data);
-                //Заполним кастомный двумерный массива (учитывая maxWords),
-                //вставляя при надобности в конец String типа "?"
-                String arr[][] = fillTwodimCustomArr(data, maxWords);
+                //Заполним ArrayList<Arraylist<String>> (учитывая maxWords),
+                //вставляя при надобности в конец каждой строки "?"
+                ArrayList<ArrayList<String>> al2Dim = fill2DimArrayList(data, maxWords);
 
-                for (int i = 0; i < data.size(); ++i) {
-                    Log.d(TAG, "result " + data.get(i));
-                    String strResult = data.get(i);
-                    strResult = strResult.trim();
-                    String[] words = strResult.split("\\s+");
-
-                    //Сначала проверим совпадение по отдельным словам
-                    for (int j = 0; j < words.length; ++j) {
-                        String word = words[j];
-                        attemptToInsertPhoto(word);
-                    }
-                    //Теперь проверим совпадение имени фото по двум подряд идущим через пробел словам
-                    for (int j = 0; j < (words.length - 1); ++j) {
-                        String photoName = words[j] + " " + words[j + 1];
-                        attemptToInsertPhoto(photoName);
+                //Будем сохранять названия в Set<String> set
+                Set<String> set = new HashSet<>();
+                //Сначала разберемся с двусловными названиями
+                while (true) {
+                    int i0 = 0;
+                    int j0 = 0;
+                    out:
+                    for (int i = i0; i < al2Dim.size(); ++i) {
+                        ArrayList<String> row = al2Dim.get(i);
+                        for (int j = j0; j < al2Dim.get(0).size() - 1; ++j) {
+                            String photoName = row.get(j) + " " + row.get(j + 1);
+                            if (map.containsKey(photoName)) {//название в базе названий есть
+                                set.add(photoName);
+                                i0 = i;
+                                j0 = j;
+                                //Удалим столбцы j и j+1 из al2Dim
+                                for (int k = 0; k < al2Dim.size(); ++k) {
+                                    al2Dim.get(k).remove(j0);
+                                    al2Dim.get(k).remove(j0);
+                                }
+                                break out;
+                            }
+                        } //for(j)
+                    } //for(i)
+                    break;
+                } //while(true)
+                //Теперь разберемся с однословными названиями
+                for (int i = 0; i < al2Dim.size(); ++i) {
+                    ArrayList<String> row = al2Dim.get(i);
+                    for (int j = 0; j < al2Dim.get(0).size(); ++j) {
+                        String photoName = row.get(j);
+                        if (map.containsKey(photoName)) //название в базе названий есть
+                            set.add(photoName);
                     }
                 }
+                //Пытаемся вставить фотографии в таблицу в соответствии с именами в set
+                for (String s : set) {
+                    attemptToInsertPhoto(s);
+                }
+                //Перезапускаем слушателя речи
                 startListening();
             }
-//            startAudioSound();
+//          startAudioSound();
         }
 
         public void onPartialResults(Bundle partialResults)
