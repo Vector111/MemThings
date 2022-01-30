@@ -91,7 +91,7 @@
 пума;				puma
 пуффин;				puffin
 пчела;				bee
-рыба-лев;			lionfish
+рыба лев;			lionfish
 свинья;				pig
 скат;				cramp_fish
 скорпион;			scorpion

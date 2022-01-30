@@ -173,6 +173,7 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         mStreamVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION); // getting system volume into var for later un-muting
 
         if(voiceInput_ib.isEnabled()){
+            bBreakSpeechListening = false;
             voiceInputIbToPressedState();
             voiceInputIbState *= (-1);
 
@@ -191,6 +192,7 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
                     voiceInputIbToNormalState();
                     bBreakSpeechListening = true;
                     sr.stopListening();
+                    speek_tv.setText("");
                     startAudioSound();
                 }
 
@@ -314,7 +316,7 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
                     {
                         hideKeyboard(RememberActivity.this);
 
-                        attemptToInsertPhoto(autoCompleteTextView.getText().toString());
+                        attemptToInsertPhoto(map.get(autoCompleteTextView.getText().toString()));
 
                         autoCompleteTextView.setText("");
                     }
@@ -327,13 +329,9 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         });
     }
 
-    private void attemptToInsertPhoto(String photoName)
+    private void attemptToInsertPhoto(Integer rid)
     {
-        //Пытаемся вставить фото в соответствии с его названием
-        photoName = photoName.toLowerCase();
-        if(!map.containsKey(photoName))
-            return;
-        int rid = map.get(photoName); //id фото в соответствии с названием
+        //Пытаемся вставить файл фото по его ресурсу
         //Определяем позицию для вставки (попутно проверяя, не вставлен ли в grid уже такой же rid)
         int insertPos = -2; //позиция для вставки
         for (int i = 0; i < grid.getAdapter().getCount(); ++i){
@@ -394,9 +392,9 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         public void onReadyForSpeech(Bundle params)
         {
             Log.d(TAG, "onReadyForSpeech");
-            if(!bBreakSpeechListening) {
-                speek_tv.setText(R.string.speak_pls);
-            }
+//            if(!bBreakSpeechListening) {
+//                speek_tv.setText(R.string.speak_pls);
+//            }
 //            startAudioSound();
         }
 
@@ -418,9 +416,9 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         public void onEndOfSpeech()
         {
             Log.d(TAG, "onEndofSpeech");
-            if(!bBreakSpeechListening){
-                speek_tv.setText("");
-            }
+//            if(!bBreakSpeechListening){
+//                speek_tv.setText("");
+//            }
         }
 
         public void onError(int error)
@@ -439,14 +437,10 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
 //                    startAudioSound();
                     return;
                 }
-                else if(error == 7) {
-                    errS = "Говорите четче!";
-                }
-                else {
+                else if(error != 7) {
                     errS = "Проблемы речевого ввода";
+                    myToastShow(RememberActivity.this, errS, Gravity.CENTER, Toast.LENGTH_SHORT );
                 }
-                speek_tv.setText(errS);
-    //            Toast.makeText(RememberActivity.this, errS, Toast.LENGTH_SHORT).show();//toDo
                 startListening();
             }
 //            startAudioSound();
@@ -463,8 +457,8 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
                 //вставляя при надобности в конец каждой строки "?"
                 ArrayList<ArrayList<String>> al2Dim = fill2DimArrayList(data, maxWords);
 
-                //Будем сохранять названия в Set<String> set
-                Set<String> set = new HashSet<>();
+                //Будем сохранять имена файлов фотографий в Set<Integer> set
+                Set<Integer> set = new HashSet<>();
                 //Сначала разберемся с двусловными названиями
                 while (true) {
                     int i0 = 0;
@@ -475,7 +469,7 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
                         for (int j = j0; j < al2Dim.get(0).size() - 1; ++j) {
                             String photoName = row.get(j) + " " + row.get(j + 1);
                             if (map.containsKey(photoName)) {//название в базе названий есть
-                                set.add(photoName);
+                                set.add(map.get(photoName));
                                 i0 = i;
                                 j0 = j;
                                 //Удалим столбцы j и j+1 из al2Dim
@@ -495,12 +489,18 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
                     for (int j = 0; j < al2Dim.get(0).size(); ++j) {
                         String photoName = row.get(j);
                         if (map.containsKey(photoName)) //название в базе названий есть
-                            set.add(photoName);
+                            set.add(map.get(photoName));
                     }
                 }
                 //Пытаемся вставить фотографии в таблицу в соответствии с именами в set
-                for (String s : set) {
-                    attemptToInsertPhoto(s);
+                if(set.isEmpty()){
+                    String warn = "Название в базе отсутствует! Говорите чётче";
+                    myToastShow(RememberActivity.this, warn, Gravity.CENTER, Toast.LENGTH_SHORT );
+                }
+                else {
+                    for (Integer i : set) {
+                        attemptToInsertPhoto(i);
+                    }
                 }
                 //Перезапускаем слушателя речи
                 startListening();
@@ -612,6 +612,7 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
                 voiceInput_ib.setVisibility(View.GONE);
                 speek_tv.setVisibility(View.GONE);
                 bBreakSpeechListening = true;
+                speek_tv.setText("");
                 sr.stopListening();
                 startAudioSound();
 
