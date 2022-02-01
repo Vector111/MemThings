@@ -73,7 +73,7 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
 
     // Параметры RememberTimer
     private static final long bigMillis = 36000000; // = 10 часам - максим. число мс,
-                                                    // которое user явно не будет тратить на решение
+    // которое user явно не будет тратить на решение
     private static final long intervalMs = 1000;    //один tick of RememberTimer (мс)
     private long timeElapsedMs;                     //израсходовано мс с начала решения задачи
     private RememberTimer timer;
@@ -102,8 +102,10 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
     private int mStreamVolume = 0;
     private Handler mHandler = new Handler();
 
+    private boolean bCanStartListening = true;
+
     public static Intent newIntent(Context context, ArrayList<String> alS,
-        ArrayList<Integer> alI, ArrayList<Integer> customArr)
+                                   ArrayList<Integer> alI, ArrayList<Integer> customArr)
     {
         Intent intent = new Intent(context, RememberActivity.class);
         intent.putStringArrayListExtra(EXTRA_ALS, alS);
@@ -178,19 +180,26 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
             voiceInputIbState *= (-1);
 
             startListening();
+            bCanStartListening = false;
         }
 
         voiceInput_ib.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(voiceInputIbState == 1) {
-                    voiceInputIbToPressedState();
-                    bBreakSpeechListening = false;
-                    startListening();
+                    if(bCanStartListening) {
+                        voiceInputIbToPressedState();
+                        bBreakSpeechListening = false;
+                        startListening();
+                        bCanStartListening = false;
+                    }
+                    else
+                        return;
                 }
                 else {
                     voiceInputIbToNormalState();
                     bBreakSpeechListening = true;
+                    bCanStartListening = true; //на всякий случай
                     sr.stopListening();
                     speek_tv.setText("");
                     startAudioSound();
@@ -424,6 +433,7 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         public void onError(int error)
         {
             Log.d(TAG,  "error " +  error);
+            bCanStartListening = true;
 
             if(!bBreakSpeechListening){
                 String errS;
@@ -437,10 +447,10 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
 //                    startAudioSound();
                     return;
                 }
-                else if(error != 7) {
-                    errS = "Проблемы речевого ввода";
-                    myToastShow(RememberActivity.this, errS, Gravity.CENTER, Toast.LENGTH_SHORT );
-                }
+//                else if(error != 7) {
+//                    errS = "Проблемы речевого ввода";
+//                    myToastShow(RememberActivity.this, errS, Gravity.CENTER, Toast.LENGTH_SHORT );
+//                }
                 startListening();
             }
 //            startAudioSound();
@@ -448,7 +458,7 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
 
         public void onResults(Bundle results) {
             Log.d(TAG, "onResults " + results);
-
+            bCanStartListening = true;
             if (!bBreakSpeechListening) {
                 ArrayList<String> data = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                 //Определим максимальное кол-во слов по всем вариантам
