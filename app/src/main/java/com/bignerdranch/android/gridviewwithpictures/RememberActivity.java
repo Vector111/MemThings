@@ -45,7 +45,11 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class RememberActivity extends AppCompatActivity implements DoForPositive1 {
+
     private static final String EXTRA_ALS =
         "com.bignerdranch.android.gridviewwithpictures.als";
     private static final String EXTRA_ALI =
@@ -54,22 +58,20 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         "com.bignerdranch.android.gridviewwithpictures.customArr";
 
     private static final String TAG = "MyTag";
-
-
-    public ConstraintLayout mainLayout;
-    public ConstraintLayout upSubLayout;
-    private AutoCompleteTextView autoCompleteTextView;
-    private TextView speek_tv;
-    private TextView warningTextView;
-    public GridView grid;
-    private TextView rememberActivityAim_tv;
+    @BindView(R.id.mainLayout1)  public ConstraintLayout mainLayout;
+    @BindView(R.id.upSubLayout1) public ConstraintLayout upSubLayout;
+    @BindView(R.id.autoCompleteTextView) AutoCompleteTextView autoCompleteTextView;
+    @BindView(R.id.speek_tv)  TextView speek_tv;
+    @BindView(R.id.warningTextView)  TextView warningTextView;
+    @BindView(R.id.seek_grid) public GridView grid;
+    @BindView(R.id.rememberActivityAim_tv)  TextView rememberActivityAim_tv;
     private int nThings; //число картинок для запоминания
     private int rowsNum; //число строк grid
     private int columnsNum; //число столбцов grid
     private int cellDim; //ширина стороны квадрата ячейки
     private MyAdapter adapter;
-    private TextView timer_tv;
-    private Button ready_btn;
+    @BindView(R.id.timer_tv1)  TextView timer_tv;
+    @BindView(R.id.ready_btn)  Button ready_btn;
 
     // Параметры RememberTimer
     private static final long bigMillis = 36000000; // = 10 часам - максим. число мс,
@@ -92,7 +94,7 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
     // текст кнопки будет переключаться между "Источник" и "Результат"
     private int readyBtnPressTimes = 0;
     private ArrayList<ImageView> imageViewArrayList;
-    private ImageButton voiceInput_ib;
+    @BindView(R.id.voiceInput_ib)  ImageButton voiceInput_ib;
     private static int voiceInputIbState = 1;
 
     private SpeechRecognizer sr;
@@ -102,11 +104,8 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
     private int mStreamVolume = 0;
     private Handler mHandler = new Handler();
 
-    private boolean bCanStartListening = true;
-
     public static Intent newIntent(Context context, ArrayList<String> alS,
-                                   ArrayList<Integer> alI, ArrayList<Integer> customArr)
-    {
+        ArrayList<Integer> alI, ArrayList<Integer> customArr) {
         Intent intent = new Intent(context, RememberActivity.class);
         intent.putStringArrayListExtra(EXTRA_ALS, alS);
         intent.putIntegerArrayListExtra(EXTRA_ALI, alI);
@@ -137,19 +136,13 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         rowsNum = getRowsNum(index1);
         columnsNum = nThings / rowsNum;
 
-        mainLayout = (ConstraintLayout) findViewById(R.id.mainLayout1);
-        upSubLayout = (ConstraintLayout) findViewById(R.id.upSubLayout1);
-        warningTextView = (TextView) findViewById(R.id.warningTextView);
-        rememberActivityAim_tv = (TextView) findViewById(R.id.rememberActivityAim_tv);
-        grid = (GridView) findViewById(R.id.seek_grid);
-        timer_tv = (TextView) findViewById(R.id.timer_tv1);
+        ButterKnife.bind(this);
 
         bBreakSpeechListening = false;
 
         sr = SpeechRecognizer.createSpeechRecognizer(this);
         sr.setRecognitionListener(new listener());
 
-        ready_btn = (Button) findViewById(R.id.ready_btn);
         ready_btn.setText(R.string.ready);
         ready_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -166,8 +159,6 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
             }
         });
 
-        speek_tv = (TextView) findViewById(R.id.speek_tv);
-        voiceInput_ib = (ImageButton) findViewById(R.id.voiceInput_ib);
         voiceInput_ib.setImageResource(R.drawable.microphone_normal);
         voiceInput_ib.setBackgroundResource(R.drawable.bg_microphone_normal);
 
@@ -175,37 +166,21 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         mStreamVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION); // getting system volume into var for later un-muting
 
         if(voiceInput_ib.isEnabled()){
-            bBreakSpeechListening = false;
-            voiceInputIbToPressedState();
-            voiceInputIbState *= (-1);
-
             startListening();
-            bCanStartListening = false;
         }
 
         voiceInput_ib.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(voiceInputIbState == 1) {
-                    if(bCanStartListening) {
-                        voiceInputIbToPressedState();
-                        bBreakSpeechListening = false;
-                        startListening();
-                        bCanStartListening = false;
-                    }
-                    else
-                        return;
+                    startListening();
                 }
                 else {
-                    voiceInputIbToNormalState();
+                    voiceInputIbToDisabledState();
                     bBreakSpeechListening = true;
-                    bCanStartListening = true; //на всякий случай
-                    sr.stopListening();
                     speek_tv.setText("");
                     startAudioSound();
                 }
-
-                voiceInputIbState *= (-1);
             }
         });
 
@@ -228,22 +203,45 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,3);
 //        intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS,500);
 //        intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS,500);
+
+        bBreakSpeechListening = false;
+        voiceInputIbToPressedState();
+        voiceInputIbState = -1;
+
         sr.startListening(intent);
-        Log.i("111111","11111111");
+    }
+
+    private void stopListening()
+    {
+        bBreakSpeechListening = true;
+        voiceInputIbToNormalState();
+        voiceInputIbState = 1;
+
+        sr.stopListening();
     }
 
     private void voiceInputIbToPressedState()
     {
+        voiceInput_ib.setEnabled(true);
         voiceInput_ib.setImageResource(R.drawable.pause);
         voiceInput_ib.setBackgroundResource(R.drawable.bg_pause);
         speek_tv.setText(R.string.speak_pls);
         speek_tv.setBackgroundResource(R.drawable.golden_rod_shape);
-    }
+        }
 
     private void voiceInputIbToNormalState()
     {
+        voiceInput_ib.setEnabled(true);
         voiceInput_ib.setImageResource(R.drawable.microphone_normal);
         voiceInput_ib.setBackgroundResource(R.drawable.bg_microphone_normal);
+        speek_tv.setText("");
+    }
+
+    private void voiceInputIbToDisabledState()
+    {
+        voiceInput_ib.setEnabled(false);
+        voiceInput_ib.setImageResource(R.drawable.microphone_disabled);
+        voiceInput_ib.setBackgroundResource(R.drawable.bg_microphone_disabled);
         speek_tv.setText("");
     }
 
@@ -300,21 +298,6 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
                 adapter.LoadArr(adapterArray);
                 grid.setAdapter(adapter);
 
-//                textView.addTextChangedListener (new TextWatcher() {
-//                    @Override
-//                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//                    }
-//                    @Override
-//                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-//                    }
-//                    @Override
-//                    public void afterTextChanged(Editable s) {
-//                        String s1 = s.toString();
-//                        int kkk = 0;
-//                    }
-//                });
-
-                autoCompleteTextView = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView);
                 String[] stringArray = Arrays.copyOf(alS.toArray(), alS.toArray().length, String[].class);
                 ArrayAdapter<String> adapter =
                     new ArrayAdapter<String>(RememberActivity.this, android.R.layout.simple_list_item_1, stringArray);
@@ -433,16 +416,14 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         public void onError(int error)
         {
             Log.d(TAG,  "error " +  error);
-            bCanStartListening = true;
-
-            if(!bBreakSpeechListening){
+            if(bBreakSpeechListening){
+                stopListening();
+            }
+            else { //bBreakSpeechListening == false
                 String errS;
                 if(error == 2) {
                     errS = "Подключите Интернет!";
-                    voiceInputIbToNormalState();
-                    voiceInputIbState *= (-1);
-                    bBreakSpeechListening = true;
-                    sr.stopListening();
+                    stopListening();
                     speek_tv.setText(errS);
 //                    startAudioSound();
                     return;
@@ -458,8 +439,10 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
 
         public void onResults(Bundle results) {
             Log.d(TAG, "onResults " + results);
-            bCanStartListening = true;
-            if (!bBreakSpeechListening) {
+            if(bBreakSpeechListening){
+                stopListening();
+            }
+            else { //bBreakSpeechListening == false
                 ArrayList<String> data = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                 //Определим максимальное кол-во слов по всем вариантам
                 int maxWords = getMaxWords(data);
@@ -619,11 +602,10 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
         if(dlg2Kind == 1) {
             ++readyBtnPressTimes;
             if(readyBtnPressTimes == 1) {
+                speek_tv.setText("");
+                stopListening();
                 voiceInput_ib.setVisibility(View.GONE);
                 speek_tv.setVisibility(View.GONE);
-                bBreakSpeechListening = true;
-                speek_tv.setText("");
-                sr.stopListening();
                 startAudioSound();
 
                 ready_btn.setText(R.string.source);
@@ -690,8 +672,7 @@ public class RememberActivity extends AppCompatActivity implements DoForPositive
             goOutFlag = true;
             timer.myCancel();
 
-            bBreakSpeechListening = true;
-            sr.stopListening();
+            stopListening();
             startAudioSound();
 
             Intent intent = new Intent(this, MainActivity.class);

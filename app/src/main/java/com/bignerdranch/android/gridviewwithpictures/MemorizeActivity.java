@@ -47,19 +47,22 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class MemorizeActivity extends AppCompatActivity implements DoForPositive1 {
-    public ConstraintLayout mainLayout;
-    public ConstraintLayout upSubLayout;
-    public GridView grid;
+    @BindView(R.id.mainLayout) public ConstraintLayout mainLayout;
+    @BindView(R.id.upSubLayout) public ConstraintLayout upSubLayout;
+    @BindView(R.id.grid) public GridView grid;
     private PictRes pictRes = PictRes.instance();
-    private TextView memorizeActivityAim_tv;
+    @BindView(R.id.memorizeActivityAim_tv) TextView memorizeActivityAim_tv;
     private int nThings; //число картинок для запоминания
     private int memTime; //время для запоминания (сек)
     private int rowsNum; //число строк grid
     private int columnsNum; //число столбцов grid
     private MyAdapter adapter;
-    private TextView timer_tv;
-    private Button next_btn;
+    @BindView(R.id.timer_tv) TextView timer_tv;
+    @BindView(R.id.next_btn) Button next_btn;
     private SolveTimer timer;
     boolean goOutFlag = false;
     private ArrayList<Integer> customArr;
@@ -80,6 +83,8 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_memorize);
 
+        ButterKnife.bind(this);
+
         setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         Settings settings = new Settings(this);
@@ -94,13 +99,6 @@ public class MemorizeActivity extends AppCompatActivity implements DoForPositive
         // Генерируем pairsArrSI
         formPairsArrSI();
 
-        mainLayout = (ConstraintLayout) findViewById(R.id.mainLayout);
-        upSubLayout = (ConstraintLayout) findViewById(R.id.upSubLayout);
-        memorizeActivityAim_tv = (TextView) findViewById(R.id.memorizeActivityAim_tv);
-        grid = (GridView) findViewById(R.id.grid);
-        timer_tv = (TextView) findViewById(R.id.timer_tv);
-
-        next_btn = (Button) findViewById(R.id.next_btn);
         next_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

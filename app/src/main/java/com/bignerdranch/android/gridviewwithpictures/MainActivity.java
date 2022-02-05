@@ -18,29 +18,31 @@ import static com.bignerdranch.android.gridviewwithpictures.MySettings.*;
 import android.content.Intent;
 import android.widget.Toast;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity implements DoForPositive1 {
     public SharedPreferences apppref;
     public static final String APP_PREFERENCES = "apppref";
 
-    private ImageButton decThingsNum_ib;
-    private ImageButton incThingsNum_ib;
-    private TextView thingsNumVal_tv;
+    @BindView(R.id.decThingsNum_ib) ImageButton decThingsNum_ib;
+    @BindView(R.id.incThingsNum_ib) ImageButton incThingsNum_ib;
+    @BindView(R.id.thingsNumVal_tv) TextView thingsNumVal_tv;
     private static int indNumThingsArr = 0;
 
-    private ImageButton decMemTime_ib;
-    private ImageButton incMemTime_ib;
-    private TextView memTimeVal_tv;
+    @BindView(R.id.decMemTime_ib)  ImageButton decMemTime_ib;
+    @BindView(R.id.incMemTime_ib)  ImageButton incMemTime_ib;
+    @BindView(R.id.memTimeVal_tv)  TextView memTimeVal_tv;
     private static int indMemTimeArr = 0;
 
-    private Button gotoGame_btn;
+    @BindView(R.id.gotoGame_btn)  Button gotoGame_btn;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        gotoGame_btn = (Button) findViewById(R.id.gotoGame_btn);
+        ButterKnife.bind(this);
 
         gotoGame_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,13 +62,7 @@ public class MainActivity extends AppCompatActivity implements DoForPositive1 {
         //читаем индекс массива времен запоминания
         indMemTimeArr = settings.getIndMemTimeArr();
 
-        decThingsNum_ib = (ImageButton) findViewById(R.id.decThingsNum_ib);
-        incThingsNum_ib = (ImageButton) findViewById(R.id.incThingsNum_ib);
-        thingsNumVal_tv = (TextView) findViewById(R.id.thingsNumVal_tv);
-
-        decMemTime_ib = (ImageButton) findViewById(R.id.decMemTime_ib);
-        incMemTime_ib = (ImageButton) findViewById(R.id.incMemTime_ib);
-        memTimeVal_tv = (TextView) findViewById(R.id.memTimeVal_tv);
+        ButterKnife.bind(this);
 
         new EnterInt(MainActivity.this, numThingsArr, indNumThingsArr,
                 decThingsNum_ib, R.drawable.minus,
